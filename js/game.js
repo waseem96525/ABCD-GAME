@@ -96,7 +96,7 @@ window.Game = (function(){
   }
 
   /* ---------------- screen router ---------------- */
-  const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash','screen-shop','screen-story'];
+  const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash','screen-shop','screen-story','screen-draw'];
   let currentScreen = 'screen-home';
   function showScreen(name){
     if (currentScreen === 'level' && name !== 'level'){
@@ -532,6 +532,86 @@ window.Game = (function(){
     updateHomeStats();
   }
 
+  /* ---------------- draw pad ---------------- */
+  let drawCtx = null, drawColor = '#FF6B6B', drawSize = 12, drawEraser = false, drawPainting = false, drawLast = null;
+  const DRAW_COLORS = ['#FF6B6B','#ffb62e','#6BCB77','#4D96FF','#9D65C9','#FF6B9D','#3a2d5e','#000000'];
+  function initDraw(){
+    const cv = $id('draw-canvas');
+    if (!cv) return;
+    drawCtx = cv.getContext('2d');
+    drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round';
+    // white bg
+    drawCtx.fillStyle = '#fff'; drawCtx.fillRect(0,0,cv.width,cv.height);
+    // colors
+    const pal = $id('draw-colors');
+    if (pal && pal.children.length === 0){
+      DRAW_COLORS.forEach(c=>{
+        const b = document.createElement('button');
+        b.style.cssText = 'width:32px;height:32px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.9);cursor:pointer;';
+        b.style.background = c;
+        if (c === drawColor) b.style.outline = '3px solid #ffd35c';
+        b.onclick = () => { drawColor=c; drawEraser=false; $id('btn-eraser').style.outline=''; [...pal.children].forEach(x=>x.style.outline = x.style.background===c?'3px solid #ffd35c':''); };
+        pal.appendChild(b);
+      });
+    }
+    // sizes
+    document.querySelectorAll('#draw-sizes [data-size]').forEach(b=>{
+      b.onclick = () => {
+        document.querySelectorAll('#draw-sizes [data-size]').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        drawSize = parseInt(b.dataset.size);
+        drawEraser = false;
+        $id('btn-eraser').style.outline = '';
+      };
+    });
+    const eraserBtn = $id('btn-eraser');
+    if (eraserBtn) eraserBtn.onclick = () => {
+      drawEraser = !drawEraser;
+      eraserBtn.style.outline = drawEraser ? '3px solid #ffd35c' : '';
+      eraserBtn.style.background = drawEraser ? '#fff6cc' : '';
+    };
+    // events
+    const wrap = $id('draw-wrap');
+    const getPos = (e) => {
+      const r = cv.getBoundingClientRect();
+      const sx = cv.width / r.width;
+      const sy = cv.height / r.height;
+      return {x:(e.clientX - r.left)*sx, y:(e.clientY - r.top)*sy};
+    };
+    const start = (e) => { e.preventDefault(); drawPainting=true; drawLast=getPos(e); try{ cv.setPointerCapture(e.pointerId);}catch(_){} };
+    const move = (e) => {
+      if (!drawPainting) return;
+      e.preventDefault();
+      const p = getPos(e);
+      drawCtx.strokeStyle = drawEraser ? '#fff' : drawColor;
+      drawCtx.lineWidth = drawSize;
+      drawCtx.beginPath(); drawCtx.moveTo(drawLast.x, drawLast.y); drawCtx.lineTo(p.x,p.y); drawCtx.stroke();
+      drawLast = p;
+    };
+    const end = (e) => { drawPainting=false; try{ cv.releasePointerCapture(e.pointerId);}catch(_){} };
+    cv.addEventListener('pointerdown', start, {passive:false});
+    cv.addEventListener('pointermove', move, {passive:false});
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', end);
+    cv.addEventListener('pointerleave', end);
+  }
+  function clearDraw(){
+    const cv=$id('draw-canvas');
+    if (!cv||!drawCtx) return;
+    drawCtx.fillStyle='#fff'; drawCtx.fillRect(0,0,cv.width,cv.height);
+    FX.click();
+  }
+  function saveDraw(){
+    const cv=$id('draw-canvas');
+    if (!cv) return;
+    const a=document.createElement('a');
+    a.download='abc-champ-doodle-'+new Date().toISOString().slice(0,10)+'.png';
+    a.href=cv.toDataURL('image/png');
+    a.click();
+    FX.correct();
+    burst(window.innerWidth/2, window.innerHeight*0.5);
+  }
+
   /* ---------------- win replay target ---------------- */
   let currentWinLevel = 1;
 
@@ -663,7 +743,12 @@ window.Game = (function(){
     $id('btn-win-replay').onclick = () => runLevel(currentWinLevel);
     $id('btn-dash-back').onclick = () => showScreen('home');
     $id('btn-shop-back').onclick = () => showScreen('home');
+    $id('btn-draw-back').onclick = () => showScreen('home');
+    $id('btn-draw-clear').onclick = clearDraw;
+    $id('btn-draw-save').onclick = saveDraw;
     $id('btn-home-shop').onclick = () => { renderShop(); showScreen('shop'); updateShopFox(); };
+    const drawHomeBtn = $id('btn-draw');
+    if (drawHomeBtn) drawHomeBtn.onclick = () => { showScreen('draw'); setTimeout(initDraw, 80); };
     $id('btn-home-settings').onclick = openGate;
     $id('btn-dash').onclick = () => { $id('settings-modal').classList.add('hide'); renderDash(); showScreen('dash'); };
 

@@ -63,7 +63,10 @@
       <button id="btn-daily-claim" class="btn btn-primary tiny" style="margin-top:6px;">Claim</button>
     </div>
     <button id="btn-play" class="big-play">&#9654; Play</button>
-    <button id="btn-install" class="btn tiny" style="display:none; margin-top:8px; background:linear-gradient(180deg,#fff,#eef6ff);">⬇️ Install App</button>
+    <div style="display:flex; gap:8px; margin-top:8px; z-index:1;">
+      <button id="btn-draw" class="btn tiny" style="background:linear-gradient(180deg,#fff,#e6f0ff);">🎨 Draw</button>
+      <button id="btn-install" class="btn tiny" style="display:none; background:linear-gradient(180deg,#fff,#eef6ff);">⬇️ Install App</button>
+    </div>
     <div class="sub-tip" id="home-tip">Tap the big button to start your adventure!</div>
   </div>
   <div class="lang-row">
@@ -124,6 +127,31 @@
       <button id="btn-win-next" class="btn btn-primary">Next &#9654;</button>
     </div>
     <div style="margin-top:12px; font-size:12px; font-weight:900; color:#6b4a00; background:rgba(255,255,255,.9); padding:6px 12px; border-radius:40px; border:1px solid rgba(255,255,255,.9);">💖 THIS GAME IS MADE BY ZUNAISHA'S FATHER WASEEM 💖</div>
+  </div>
+</section>
+
+<!-- ============ DRAW ============ -->
+<section id="screen-draw" class="screen">
+  <header class="topbar">
+    <button id="btn-draw-back" class="round-btn">&#8592;</button>
+    <h2>🎨 Doodle Pad</h2>
+    <div style="display:flex; gap:6px;">
+      <button id="btn-draw-clear" class="btn tiny">🧹</button>
+      <button id="btn-draw-save" class="btn tiny btn-primary">💾</button>
+    </div>
+  </header>
+  <div id="draw-toolbar" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:8px; background:rgba(255,255,255,.9); border-radius:16px; margin-bottom:8px; box-shadow:var(--shadow-soft); border:1px solid rgba(255,255,255,.9);">
+    <div id="draw-colors" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    <div style="width:1px; background:#e0e7f5; margin:0 4px;"></div>
+    <div id="draw-sizes" style="display:flex; gap:6px; align-items:center;">
+      <button class="chip tiny" data-size="6">•</button>
+      <button class="chip tiny active" data-size="12">●</button>
+      <button class="chip tiny" data-size="22">⬤</button>
+    </div>
+    <button id="btn-eraser" class="chip tiny">🧽</button>
+  </div>
+  <div id="draw-wrap" style="flex:1; display:flex; justify-content:center; align-items:center; background:rgba(255,255,255,.55); border-radius:18px; padding:8px; border:1.5px solid rgba(255,255,255,.9); box-shadow:var(--shadow-soft); overflow:hidden; position:relative;">
+    <canvas id="draw-canvas" width="560" height="420" style="width:100%; max-width:560px; aspect-ratio:560/420; background:#fff; border-radius:14px; box-shadow:0 4px 14px rgba(0,0,0,.08); touch-action:none; cursor:crosshair; display:block;"></canvas>
   </div>
 </section>
 
