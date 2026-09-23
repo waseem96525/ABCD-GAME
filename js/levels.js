@@ -218,10 +218,13 @@ const Levels = (function(){
       html += '<div class="big-pic">' + q.emoji + '</div>';
       html += '<div class="action-line">'+tt('spellTitle')+' <span style="color:'+levelAccent()+'">'+q.word+'</span></div>';
       html += '<div class="word-boxes">' + q.target.map(()=>'<div class="slot"></div>').join('') + '</div>';
-      html += '<div class="spell-hint">'+tt('spellHint')+' • '+q.word.length+' letters</div>';
-      html += '<div class="option-row">' + q.shuffled.map(l => '<button class="word-chip" data-l="'+l+'">'+l+'</button>').join('') + '</div>';
+      html += '<button class="mic-btn" id="spell-mic" style="width:64px;height:64px;font-size:24px; margin:6px auto;">🎤</button>';
+      html += '<div id="spell-mic-status" style="font-size:12px; font-weight:800; color:var(--ink-2); background:rgba(255,255,255,.9); padding:5px 12px; border-radius:40px; border:1px solid rgba(255,255,255,.9); display:inline-block;">'+tt('spellVoice')+'</div>';
+      html += '<div class="spell-hint" style="margin-top:6px;">'+tt('spellHint')+' • '+q.word.length+' letters — or tap letters</div>';
+      html += '<div class="option-row" style="margin-top:8px;">' + q.shuffled.map(l => '<button class="word-chip" data-l="'+l+'">'+l+'</button>').join('') + '</div>';
       cardEl.innerHTML = html;
       window.Game.hideMascot();
+      setupSpellVoice(q);
       FX.speak(tt('spellTitle')+' '+q.word, UI_LANG === 'hi' ? 'hi' : 'en');
     } else if (q.type === 'count'){
       const emojis = Array(q.count).fill(q.emoji).join(' ');
@@ -330,6 +333,73 @@ const Levels = (function(){
         listening = false;
         btn.classList.remove('listening');
         if (fallback) fallback.style.display = 'flex';
+      }
+    };
+  }
+
+  let spellRec = null;
+  function setupSpellVoice(q){
+    const btn = document.getElementById('spell-mic');
+    const status = document.getElementById('spell-mic-status');
+    if (!btn) return;
+    const hasMic = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!hasMic){
+      if (status) status.textContent = tt('phonicsNoMic');
+      return;
+    }
+    btn.onclick = () => {
+      if (busy) return;
+      const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      try{
+        if (spellRec) try{ spellRec.abort(); }catch(_){}
+        spellRec = new Rec();
+        spellRec.lang = UI_LANG === 'hi' ? 'hi-IN' : 'en-US';
+        spellRec.interimResults = false;
+        spellRec.maxAlternatives = 3;
+        btn.classList.add('listening');
+        if (status) status.textContent = tt('spellListening');
+        // hint: speak the word slowly
+        spellRec.onresult = (e) => {
+          const trans = Array.from(e.results[0]).map(r=>r.transcript.toLowerCase()).join(' ');
+          const clean = trans.replace(/[^a-z]/g, ''); // remove spaces/punct
+          const target = q.target.join('').toLowerCase();
+          const spaced = trans.replace(/\s+/g, '').toLowerCase();
+          const said = clean === target || spaced === target || trans.includes(target) || trans.replace(/\s/g,'').includes(target);
+          btn.classList.remove('listening');
+          if (said){
+            if (status) status.textContent = tt('spellHeard')+': "'+trans.split(' ').slice(0,3).join(' ')+'" ✓';
+            // auto-fill word boxes
+            const boxes = card().querySelectorAll('.word-boxes .slot');
+            q.target.forEach((ch,i)=>{
+              const b = boxes[i];
+              if (b){ b.classList.add('filled'); b.textContent = ch; }
+            });
+            // hide used chips
+            card().querySelectorAll('.word-chip').forEach(c=>{ c.style.visibility='hidden'; c.classList.add('used'); });
+            window.Game.burstFromElement(card());
+            FX.correct();
+            // mark placedWord to complete
+            placedWord = q.target.length;
+            correctAnswer();
+          } else {
+            if (status) status.textContent = tt('spellHeard')+': "'+trans.split(' ').slice(0,3).join(' ')+'" — '+tt('tryAgain');
+            FX.wrong();
+            // keep tap fallback
+          }
+        };
+        spellRec.onerror = () => {
+          btn.classList.remove('listening');
+          if (status) status.textContent = tt('tryAgain') + ' — tap letters';
+        };
+        spellRec.onend = () => {
+          btn.classList.remove('listening');
+          if (status && status.textContent === tt('spellListening')) status.textContent = tt('spellVoice');
+        };
+        spellRec.start();
+        setTimeout(()=>{ try{ spellRec.stop(); }catch(_){} }, 4000);
+      } catch(err){
+        btn.classList.remove('listening');
+        if (status) status.textContent = tt('tryAgain');
       }
     };
   }
@@ -1010,6 +1080,7 @@ const Levels = (function(){
     if (turboTimer){ clearInterval(turboTimer); turboTimer=null; }
     turboActive=false;
     if (phonicsRec){ try{ phonicsRec.abort(); }catch(_){} phonicsRec=null; }
+    if (spellRec){ try{ spellRec.abort(); }catch(_){} spellRec=null; }
   }
 
   return { runLevel, cleanup };
