@@ -23,6 +23,7 @@ window.Game = (function(){
       lastDailyReward: null,
       shopOwned: [],
       shopEquipped: null,
+      seenStories: [],
       badges: [],
       settings: { lang:'en', sfx:true, music:true, voice:true, breakOn:true, breakMin:15 }
     };
@@ -95,7 +96,7 @@ window.Game = (function(){
   }
 
   /* ---------------- screen router ---------------- */
-  const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash','screen-shop'];
+  const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash','screen-shop','screen-story'];
   let currentScreen = 'screen-home';
   function showScreen(name){
     if (currentScreen === 'level' && name !== 'level'){
@@ -169,8 +170,35 @@ window.Game = (function(){
     cont.innerHTML = h;
   }
 
+  /* ---------------- story ---------------- */
+  const STORY_BY_LEVEL = {1:1, 3:2, 6:3, 9:4, 10:5, 12:6, 13:7, 15:8, 16:9};
+  function showStory(worldNum, onDone){
+    const story = STORIES.find(s => s.world === worldNum);
+    if (!story) { onDone(); return; }
+    const lang = I18N[UI_LANG] ? UI_LANG : 'en';
+    const data = story[lang] || story.en;
+    const iconEl = $id('story-icon');
+    const titleEl = $id('story-title');
+    const textEl = $id('story-text');
+    const btn = $id('btn-story-next');
+    if (iconEl){ iconEl.textContent = story.icon; iconEl.style.background = 'linear-gradient(180deg,'+story.color+','+shade(story.color)+')'; }
+    if (titleEl) titleEl.textContent = data.title;
+    if (textEl) textEl.textContent = data.text;
+    if (btn){
+      btn.textContent = (UI_LANG === 'hi' ? 'शुरू करो →' : UI_LANG === 'ur' ? 'شروع کریں →' : 'Start →');
+      btn.onclick = () => { S.seenStories = S.seenStories || []; if (!S.seenStories.includes(worldNum)){ S.seenStories.push(worldNum); save(); } showScreen('level'); onDone(); };
+    }
+    showScreen('story');
+    if (story.en) FX.speak(data.title + '. ' + data.text, voiceLang());
+  }
+
   /* ---------------- run / finish ---------------- */
   function runLevel(n){
+    const world = STORY_BY_LEVEL[n];
+    if (world && !(S.seenStories||[]).includes(world)){
+      showStory(world, () => Levels.runLevel(n, { hint: S.settings.devHint === true }));
+      return;
+    }
     showScreen('level');
     Levels.runLevel(n, { hint: S.settings.devHint === true });
   }

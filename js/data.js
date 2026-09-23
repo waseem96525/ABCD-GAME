@@ -133,6 +133,18 @@ const BADGES = [
   {id:'stars', icon:'⭐', name:'Shiny Champion'}
 ];
 
+const STORIES = [
+  { world:1, icon:'🌲', color:'#6BCB77', en:{title:'The Magic Keyboard', text:'Zippy finds a glowing keyboard in the forest. Every key sings a letter!'}, hi:{title:'जादुई कीबोर्ड', text:'ज़िप्पी को जंगल में एक चमकता कीबोर्ड मिला। हर बटन एक अक्षर गाता है!'}, ur:{title:'جادوئی کی بورڈ', text:'زپی کو جنگل میں ایک چمکتا کی بورڈ ملا۔ ہر بٹن ایک حرف گاتا ہے!'} },
+  { world:2, icon:'🏔️', color:'#FF9F1C', en:{title:'Puzzle Cave', text:'Deep in the cave, letters are jumbled. Help Zippy put them back!'}, hi:{title:'पहेली गुफा', text:'गुफा में अक्षर बिखरे हैं। ज़िप्पी की मदद करो!'}, ur:{title:'پہیلی غار', text:'غار میں حروف بکھرے ہیں۔ زپی کی مدد کریں!'} },
+  { world:3, icon:'📚', color:'#4D96FF', en:{title:'Alphabet Fairy', text:'The fairy teaches big and small letters — Aa Bb Cc!'}, hi:{title:'वर्णमाला परी', text:'परी बड़े और छोटे अक्षर सिखाती है — Aa Bb Cc!'}, ur:{title:'حروف کی پری', text:'پری بڑے اور چھوٹے حروف سکھاتی ہے — Aa Bb Cc!'} },
+  { world:4, icon:'🍄', color:'#9D65C9', en:{title:'Mushroom Memory', text:'Flip the cards and match the pairs with Zippy!'}, hi:{title:'मशरूम याददाश्त', text:'पत्ते पलटो और जोड़ी बनाओ!'}, ur:{title:'مشروم یادداشت', text:'پتے پلٹیں اور جوڑی بنائیں!'} },
+  { world:5, icon:'🏗️', color:'#FF6B9D', en:{title:'Word Workshop', text:'Zippy builds words letter by letter — CAT, DOG, STAR!'}, hi:{title:'शब्द कार्यशाला', text:'ज़िप्पी अक्षरों से शब्द बनाता है — CAT, DOG, STAR!'}, ur:{title:'لفظ ورکشاپ', text:'زپی حروف سے الفاظ بناتا ہے — CAT, DOG, STAR!'} },
+  { world:6, icon:'🚀', color:'#00D1FF', en:{title:'Turbo Tunnel', text:'Type as fast as you can — the tunnel is rushing!'}, hi:{title:'तेज़ सुरंग', text:'जितनी तेज़ हो सके टाइप करो — सुरंग तेज़ है!'}, ur:{title:'تیز سرنگ', text:'جتنی تیز ہو سکے ٹائپ کریں — سرنگ تیز ہے!'} },
+  { world:7, icon:'🔢', color:'#FFD93D', en:{title:'Number Land', text:'Count stars, trace numbers — 1, 2, 3 with Zippy!'}, hi:{title:'संख्या देश', text:'तारे गिनो, नंबर लिखो — 1, 2, 3!'}, ur:{title:'نمبر لینڈ', text:'ستارے گنیں، نمبر لکھیں — 1، 2، 3!'} },
+  { world:8, icon:'🎤', color:'#FF6B6B', en:{title:'Voice Stage', text:'Say the sounds out loud — the mic is listening!'}, hi:{title:'आवाज़ मंच', text:'आवाज़ बोलो — माइक सुन रहा है!'}, ur:{title:'آواز اسٹیج', text:'آواز بولیں — مائک سن رہا ہے!'} },
+  { world:9, icon:'🧮', color:'#4ECDC4', en:{title:'Math Market', text:'Add and subtract with apples and stars at the market!'}, hi:{title:'गणित बाज़ार', text:'सेब और तारों से जोड़-घटाव करो!'}, ur:{title:'ریاضی بازار', text:'سیب اور ستاروں سے جمع تفریق کریں!'} }
+];
+
 /* -------------------- i18n strings -------------------- */
 const I18N = {
   en:{
