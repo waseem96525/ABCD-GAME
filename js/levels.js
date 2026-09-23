@@ -78,6 +78,25 @@ const Levels = (function(){
       const alt = pickRand(LETTERS, 3, answer);
       return { type:'phonics', answer, word: LETTER_DATA[answer].word, emoji: LETTER_DATA[answer].emoji, options: shuffle([answer].concat(alt)) };
     }
+    if (t === 'mathAdd'){
+      const a = 1 + Math.floor(Math.random()*5);
+      const b = 1 + Math.floor(Math.random()*5);
+      const answer = String(a + b);
+      const emoji = MATH_EMOJIS[Math.floor(Math.random()*MATH_EMOJIS.length)];
+      const pool = ['1','2','3','4','5','6','7','8','9','10'];
+      const distract = pickRand(pool, 3, answer);
+      return { type:'mathAdd', a, b, answer, emoji, options: shuffle([answer].concat(distract)) };
+    }
+    if (t === 'mathSub'){
+      const a = 5 + Math.floor(Math.random()*5); // 5-9
+      const b = 1 + Math.floor(Math.random()*4); // 1-4
+      if (b >= a) return makeQ('mathSub');
+      const answer = String(a - b);
+      const emoji = MATH_EMOJIS[Math.floor(Math.random()*MATH_EMOJIS.length)];
+      const pool = ['0','1','2','3','4','5','6','7','8'];
+      const distract = pickRand(pool, 3, answer);
+      return { type:'mathSub', a, b, answer, emoji, options: shuffle([answer].concat(distract)) };
+    }
   }
 
   function buildQuestions(n){
@@ -91,7 +110,9 @@ const Levels = (function(){
       10:{types:['sort'], count:6},
       11:{types:['spell'], count:6},
       14:{types:['count'], count:8},
-      15:{types:['phonics'], count:8}
+      15:{types:['phonics'], count:8},
+      16:{types:['mathAdd'], count:8},
+      17:{types:['mathSub'], count:8}
     };
     if (n === 1 || n === 2 || n === 9 || n === 12 || n === 13) return []; // keyboard, trace, memory, turbo, number trace are single boards
     const cfg = map[n];
@@ -252,11 +273,32 @@ const Levels = (function(){
       window.Game.hideMascot();
       if (hasMic){
         setupPhonics(q);
-        // auto speak the target
         FX.speak(q.answer + ' for ' + q.word, voiceLang());
       } else {
         cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
       }
+    } else if (q.type === 'mathAdd'){
+      const aEm = Array(q.a).fill(q.emoji).join(' ');
+      const bEm = Array(q.b).fill(q.emoji).join(' ');
+      html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#6BCB77,#2ec4a6)">➕</div><div><b>'+tt('mathAddTitle')+'</b><p>'+tt('mathAddHint')+'</p></div></div>';
+      html += '<div class="big-pic" style="font-size:28px; line-height:1.4;"><span style="background:rgba(255,255,255,.9); padding:8px 12px; border-radius:14px; border:1.5px solid rgba(255,255,255,.9);">'+aEm+'</span> <span style="font-size:28px; font-weight:900; color:var(--ink);">+</span> <span style="background:rgba(255,255,255,.9); padding:8px 12px; border-radius:14px; border:1.5px solid rgba(255,255,255,.9);">'+bEm+'</span> <span style="font-weight:900;">= ?</span></div>';
+      html += '<div class="action-line">'+q.a+' + '+q.b+' = ?</div>';
+      html += '<div class="option-row">' + q.options.map(o => '<button class="opt" data-a="'+o+'" style="font-size:32px">'+o+'</button>').join('') + '</div>';
+      cardEl.innerHTML = html;
+      cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
+      window.Game.hideMascot();
+      FX.speak(q.a + ' plus ' + q.b, voiceLang());
+    } else if (q.type === 'mathSub'){
+      const aEm = Array(q.a).fill(q.emoji).join(' ');
+      const bEm = Array(q.b).fill(q.emoji).join(' ');
+      html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#FF6B6B,#ff3b6b)">➖</div><div><b>'+tt('mathSubTitle')+'</b><p>'+tt('mathSubHint')+'</p></div></div>';
+      html += '<div class="big-pic" style="font-size:28px; line-height:1.4;"><span style="background:rgba(255,255,255,.9); padding:8px 12px; border-radius:14px; border:1.5px solid rgba(255,255,255,.9);">'+aEm+'</span> <span style="font-size:28px; font-weight:900; color:var(--ink);">−</span> <span style="background:rgba(255,255,255,.7); padding:8px 12px; border-radius:14px; border:1.5px dashed #ffb3bb; opacity:.9;">'+bEm+'</span> <span style="font-weight:900;">= ?</span></div>';
+      html += '<div class="action-line">'+q.a+' − '+q.b+' = ?</div>';
+      html += '<div class="option-row">' + q.options.map(o => '<button class="opt" data-a="'+o+'" style="font-size:32px">'+o+'</button>').join('') + '</div>';
+      cardEl.innerHTML = html;
+      cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
+      window.Game.hideMascot();
+      FX.speak(q.a + ' minus ' + q.b, voiceLang());
     }
     if (levelNum === 7) startTimer();
   }

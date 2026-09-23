@@ -47,6 +47,7 @@ const NUMBER_DATA = {
   '9':{word:'Nine',  emoji:'9️⃣', hindi:'नौ'}
 };
 const COUNT_EMOJIS = ['🍎','⭐','🐶','🎈','🍦','🚗','🍇','🐱'];
+const MATH_EMOJIS = ['🍎','⭐','🐶','🎈','🍦','🚗','🍇','🐱','⚽','🐟'];
 
 /* Simple words for Level 5 (Word Building) */
 const WORD_POOL = [
@@ -78,7 +79,7 @@ const SPELL_POOL = [
   {word:'HEART',emoji:'❤️'}
 ];
 
-/* -------------------- Level names / icons (15 levels — Type first, Trace kept as #2, Turbo + Numbers + Phonics) -------------------- */
+/* -------------------- Level names / icons (17 levels — Type first, Trace + Math + Numbers + Phonics) -------------------- */
 const LEVELS_META = [
   {name:'Type & Learn',  icon:'⌨️', color:'#FF6B6B'},
   {name:'Trace & Write', icon:'✏️', color:'#ff7e6b'},
@@ -94,7 +95,9 @@ const LEVELS_META = [
   {name:'Turbo Type',    icon:'⚡', color:'#00D1FF'},
   {name:'Number Trace',  icon:'🔢', color:'#FF9F1C'},
   {name:'Count with Zippy', icon:'🧮', color:'#4ECDC4'},
-  {name:'Say the Sound', icon:'🎤', color:'#FF6B9D'}
+  {name:'Say the Sound', icon:'🎤', color:'#FF6B9D'},
+  {name:'Add with Zippy',icon:'➕', color:'#6BCB77'},
+  {name:'Take Away',     icon:'➖', color:'#FF6B6B'}
 ];
 
 const BADGES = [
@@ -113,6 +116,8 @@ const BADGES = [
   {id:13,icon:'🔢', name:'Number Ninja'},
   {id:14,icon:'🧮', name:'Counting Star'},
   {id:15,icon:'🎤', name:'Phonics Star'},
+  {id:16,icon:'➕', name:'Addition Star'},
+  {id:17,icon:'➖', name:'Subtraction Star'},
   {id:'all', icon:'🏅', name:'Adventure Star'},
   {id:'stars', icon:'⭐', name:'Shiny Champion'}
 ];
@@ -168,6 +173,10 @@ const I18N = {
     phonicsTap:'🎤 Tap & Say',
     phonicsListening:'Listening…',
     phonicsNoMic:'Mic not available — tap to answer instead',
+    mathAddTitle:'Add them!',
+    mathAddHint:'How many altogether?',
+    mathSubTitle:'Take away!',
+    mathSubHint:'How many left?',
     urduHint:'Urdu mode — same letters, Urdu voice!',
     praises:['Great job!','Awesome!','Wonderful!','Super!','You\u2019re a star!','Fantastic!','Keep it up!','So smart!'],
     tryAgain:'Try again, you\u2019re close!',
@@ -232,6 +241,10 @@ const I18N = {
     phonicsTap:'🎤 बोलो',
     phonicsListening:'सुन रहे हैं…',
     phonicsNoMic:'माइक नहीं — टैप करके जवाब दो',
+    mathAddTitle:'जोड़ो!',
+    mathAddHint:'कुल कितने?',
+    mathSubTitle:'घटाओ!',
+    mathSubHint:'कितने बचे?',
     praises:['शाबाश!','बहुत अच्छे!','शानदार!','सुपर!','तुम तारा हो!','बहुत बढ़िया!','जारी रखो!','कितने स्मार्ट हो!'],
     tryAgain:'फिर कोशिश करो, तुम पास ही हो!',
     levelWon:'लेवल जीत गए!',
@@ -295,6 +308,10 @@ const I18N = {
     phonicsTap:'🎤 بولیں',
     phonicsListening:'سن رہے ہیں…',
     phonicsNoMic:'مائک نہیں — ٹیپ کر کے جواب دیں',
+    mathAddTitle:'جمع کریں!',
+    mathAddHint:'کل کتنے؟',
+    mathSubTitle:'تفریق کریں!',
+    mathSubHint:'کتنے باقی؟',
     urduHint:'اردو موڈ — وہی حروف، اردو آواز!',
     praises:['شاباش!','بہت اچھے!','شاندار!','سپر!','تم ستارہ ہو!','بہت بڑھیا!','جاری رکھو!','کتنے ہوشیار ہو!'],
     tryAgain:'دوبارہ کوشش کریں، آپ قریب ہیں!',
