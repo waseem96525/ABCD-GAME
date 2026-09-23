@@ -1,5 +1,5 @@
 /* ABC Champ Service Worker — offline-first, cache-first */
-const CACHE_NAME = 'abc-champ-v6';
+const CACHE_NAME = 'abc-champ-v7';
 const ASSETS = [
   './',
   './index.html',

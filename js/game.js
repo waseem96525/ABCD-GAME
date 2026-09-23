@@ -64,7 +64,7 @@ window.Game = (function(){
     const bubble = $id('mascot-bubble');
     bubble.textContent = text;
     layer.classList.remove('hide');
-    if (opts.speak !== false) FX.speak(text, UI_LANG === 'hi' ? 'hi' : 'en');
+    if (opts.speak !== false) FX.speak(text, voiceLang());
     clearTimeout(mascotTimer);
     mascotTimer = setTimeout(hideMascot, opts.hold || 2000);
   }
@@ -199,7 +199,7 @@ window.Game = (function(){
     }
     const nextBtn = $id('btn-win-next');
     if (n >= 15){
-      nextBtn.textContent = '🗺️ ' + (UI_LANG === 'hi' ? 'नक्शा' : 'Map');
+      nextBtn.textContent = '🗺️ ' + (UI_LANG === 'hi' ? 'नक्शा' : UI_LANG === 'ur' ? 'نقشہ' : 'Map');
       nextBtn.onclick = () => showScreen('map');
     } else {
       nextBtn.textContent = (UI_LANG === 'hi' ? 'अगला ▶' : 'Next ▶');
@@ -262,7 +262,7 @@ window.Game = (function(){
           runLevel(i+1);
         } else {
           FX.wrong();
-          showMascot(UI_LANG==='hi' ? 'पहले लेवल ' + i + ' पूरा करो!' : 'Finish level ' + (i) + ' first!');
+          showMascot(UI_LANG==='hi' ? 'पहले लेवल ' + i + ' पूरा करो!' : UI_LANG==='ur' ? 'پہلے لیول ' + i + ' مکمل کریں!' : 'Finish level ' + (i) + ' first!');
         }
       };
       pathEl.appendChild(node);
@@ -348,11 +348,11 @@ window.Game = (function(){
     const totalPlays = Object.values(S.plays).reduce((a,b)=>a+b,0);
     let html = '<div class="dash-hero"><div class="av">🦊</div><div><div style="font-weight:900; font-size:18px">Zippy & Friends</div><div style="font-size:13px; opacity:.9">'+doneLevels+'/15 levels • '+totalStars+'⭐ collected</div></div></div>';
     html += '<div class="stat-row">' +
-      '<div class="stat-card" style="--accent:var(--sun)"><div class="num">' + totalStars + '⭐</div><div class="lbl">' + (UI_LANG==='hi'?'कुल सितारे':'Total stars') + '</div></div>' +
-      '<div class="stat-card" style="--accent:var(--mint)"><div class="num">' + doneLevels + '/15</div><div class="lbl">' + (UI_LANG==='hi'?'लेवल पूरे':'Levels done') + '</div></div>' +
-      '<div class="stat-card" style="--accent:var(--grape)"><div class="num">' + totalPlays + '</div><div class="lbl">' + (UI_LANG==='hi'?'खेल':'Plays') + '</div></div>' +
+      '<div class="stat-card" style="--accent:var(--sun)"><div class="num">' + totalStars + '⭐</div><div class="lbl">' + (UI_LANG==='hi'?'कुल सितारे':UI_LANG==='ur'?'کل ستارے':'Total stars') + '</div></div>' +
+      '<div class="stat-card" style="--accent:var(--mint)"><div class="num">' + doneLevels + '/15</div><div class="lbl">' + (UI_LANG==='hi'?'लेवल पूरे':UI_LANG==='ur'?'مکمل لیول':'Levels done') + '</div></div>' +
+      '<div class="stat-card" style="--accent:var(--grape)"><div class="num">' + totalPlays + '</div><div class="lbl">' + (UI_LANG==='hi'?'खेल':UI_LANG==='ur'?'کھیل':'Plays') + '</div></div>' +
       '</div>';
-    html += '<div class="panel"><h3>🗺️ ' + (UI_LANG==='hi'?'हर लेवल':'Every level') + '</h3>';
+    html += '<div class="panel"><h3>🗺️ ' + (UI_LANG==='hi'?'हर लेवल':UI_LANG==='ur'?'ہر لیول':'Every level') + '</h3>';
     LEVELS_META.forEach((m,i) => {
       const n = i+1;
       const acc = S.acc[n]||0;
@@ -366,13 +366,13 @@ window.Game = (function(){
       html += '<div class="level-row">' +
         '<div class="emo">' + m.icon + '</div>' +
         '<div class="nm">' + n + '. ' + m.name +
-          '<div class="plays-note">' + (UI_LANG==='hi'?'खेल ':'played ') + plays + 'x \u00b7 ' + last + '</div>'+extra+'</div>' +
+          '<div class="plays-note">' + (UI_LANG==='hi'?'खेल ':UI_LANG==='ur'?'کھیل ':'played ') + plays + 'x \u00b7 ' + last + '</div>'+extra+'</div>' +
         '<div class="bar"><i style="width:' + acc + '%"></i></div>' +
         '<div class="st">' + (st? '⭐'.repeat(st) : '☆☆☆') + '</div>' +
         '</div>';
     });
     html += '</div>';
-    html += '<div class="panel"><h3>🏅 ' + (UI_LANG==='hi'?'स्टिकर':'Stickers') + '</h3><div class="badges-grid">';
+    html += '<div class="panel"><h3>🏅 ' + (UI_LANG==='hi'?'स्टिकर':UI_LANG==='ur'?'اسٹیکرز':'Stickers') + '</h3><div class="badges-grid">';
     BADGES.forEach(b => {
       const owned = S.badges.indexOf(String(b.id)) !== -1 || S.badges.indexOf(b.id) !== -1;
       html += '<div class="sticker' + (owned?' owned':'') + '"><div class="ic">' + (owned?b.icon:'❓') + '</div>' + b.name + '</div>';

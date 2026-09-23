@@ -57,7 +57,8 @@ const Trace = (function(){
     // progress bar under canvas
     progWrap = document.createElement('div');
     progWrap.style.cssText = 'width:100%;max-width:560px;margin:8px auto 0;display:flex;flex-direction:column;align-items:center;gap:6px;';
-    progWrap.innerHTML = '<div style="width:100%;height:10px;background:#eef2f8;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1px 3px rgba(0,0,0,.06);"><div id="trace-prog-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#5fd4a8,#ffd35c);border-radius:20px;transition:width .25s ease;"></div></div><div id="trace-prog-text" style="font-size:13px;font-weight:900;color:var(--ink-2);background:rgba(255,255,255,.9);padding:5px 12px;border-radius:40px;border:1px solid rgba(255,255,255,.9);">Trace the dotted letter fully!</div>';
+    const initTip = UI_LANG === 'hi' ? 'अक्षर को पूरा ट्रेस करो!' : UI_LANG === 'ur' ? 'حرف کو مکمل ٹریس کریں!' : 'Trace the dotted letter fully!';
+    progWrap.innerHTML = '<div style="width:100%;height:10px;background:#eef2f8;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1px 3px rgba(0,0,0,.06);"><div id="trace-prog-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#5fd4a8,#ffd35c);border-radius:20px;transition:width .25s ease;"></div></div><div id="trace-prog-text" style="font-size:13px;font-weight:900;color:var(--ink-2);background:rgba(255,255,255,.9);padding:5px 12px;border-radius:40px;border:1px solid rgba(255,255,255,.9);">' + initTip + '</div>';
     wrapper.appendChild(progWrap);
     progFill = document.getElementById('trace-prog-fill');
     progText = document.getElementById('trace-prog-text');
@@ -80,14 +81,16 @@ const Trace = (function(){
     ctrls.style.cssText = 'display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:10px;';
     const listen = document.createElement('button');
     listen.className = 'listen-btn';
-    listen.innerHTML = '🔊 ' + (UI_LANG === 'hi' ? 'सुनो' : 'Listen');
+    const listenLabel = UI_LANG === 'hi' ? 'सुनो' : UI_LANG === 'ur' ? 'سنو' : 'Listen';
+    listen.innerHTML = '🔊 ' + listenLabel;
     listen.title = 'Listen';
     listen.onclick = e => { e.stopPropagation(); FX.ensure(); sayLetter(); };
     ctrls.appendChild(listen);
 
     const clearBtn = document.createElement('button');
     clearBtn.className = 'btn tiny';
-    clearBtn.textContent = UI_LANG === 'hi' ? '🧹 साफ़' : '🧹 Clear';
+    const clearLabel = UI_LANG === 'hi' ? '🧹 साफ़' : UI_LANG === 'ur' ? '🧹 صاف' : '🧹 Clear';
+    clearBtn.textContent = clearLabel;
     clearBtn.title = 'Clear';
     clearBtn.onclick = () => {
       if (cooling || fin) return;
@@ -100,7 +103,8 @@ const Trace = (function(){
     nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-primary';
     nextBtn.id = 'trace-next';
-    nextBtn.textContent = (UI_LANG === 'hi' ? 'अगला →' : 'Next →');
+    const nextLabel = UI_LANG === 'hi' ? 'अगला →' : UI_LANG === 'ur' ? 'اگلا →' : 'Next →';
+    nextBtn.textContent = nextLabel;
     nextBtn.disabled = true;
     nextBtn.style.opacity = '0.45';
     nextBtn.style.pointerEvents = 'none';
@@ -113,9 +117,9 @@ const Trace = (function(){
     if (opts.hint) {
       const hint = document.createElement('button');
       hint.className = 'hint-btn';
-      hint.textContent = '✨ ' + (UI_LANG === 'hi' ? 'मदद करो' : 'Help me');
+      const helpLabel = UI_LANG === 'hi' ? 'मदद करो' : UI_LANG === 'ur' ? 'مدد کریں' : 'Help me';
+      hint.textContent = '✨ ' + helpLabel;
       hint.onclick = () => {
-        // fill quickly to enable Next (for testing) – still requires Next press
         quickFill();
       };
       ctrls.appendChild(hint);
@@ -262,13 +266,16 @@ const Trace = (function(){
     const pct = Math.round(Math.min(100, ratio * 100));
     progFill.style.width = pct + '%';
     if (pct < 15){
-      progText.textContent = UI_LANG === 'hi' ? 'अक्षर पर लिखो…' : 'Trace the dotted letter fully!';
+      const t = UI_LANG === 'hi' ? 'अक्षर पर लिखो…' : UI_LANG === 'ur' ? 'حرف پر لکھیں…' : 'Trace the dotted letter fully!';
+      progText.textContent = t;
       progText.style.color = 'var(--ink-2)';
     } else if (pct < THRESH*100){
-      progText.textContent = pct + '% — ' + (UI_LANG === 'hi' ? 'और थोड़ा!' : 'keep going!');
+      const t = UI_LANG === 'hi' ? 'और थोड़ा!' : UI_LANG === 'ur' ? 'اور تھوڑا!' : 'keep going!';
+      progText.textContent = pct + '% — ' + t;
       progText.style.color = 'var(--ink-2)';
     } else {
-      progText.textContent = '✓ ' + pct + '% — ' + (UI_LANG === 'hi' ? 'तैयार! Next दबाओ →' : 'Great! Tap Next →');
+      const t = UI_LANG === 'hi' ? 'तैयार! Next दबाओ →' : UI_LANG === 'ur' ? 'تیار! Next دبائیں →' : 'Great! Tap Next →';
+      progText.textContent = '✓ ' + pct + '% — ' + t;
       progText.style.color = 'var(--mint-deep)';
     }
     const ready = ratio >= THRESH;
@@ -329,13 +336,13 @@ const Trace = (function(){
     if (isNum()){
       const info = NUMBER_DATA[letter()];
       if (!info) return;
-      if (UI_LANG === 'hi') FX.speak(letter() + ' ' + info.hindi, 'hi');
+      if (UI_LANG === 'hi' || UI_LANG === 'ur') FX.speak(letter() + ' ' + info.hindi, voiceLang());
       else FX.speak(letter() + ' for ' + info.word, 'en');
     } else {
       const info = LETTER_DATA[letter()];
       if (!info) return;
-      if (UI_LANG === 'hi'){
-        FX.speak(letter() + '. ' + letter() + ' for ' + info.hindi, 'hi');
+      if (UI_LANG === 'hi' || UI_LANG === 'ur'){
+        FX.speak(letter() + '. ' + letter() + ' for ' + info.hindi, voiceLang());
       } else {
         FX.speak(letter() + '. ' + letter() + ' for ' + info.word, 'en');
       }
@@ -343,7 +350,7 @@ const Trace = (function(){
   }
   function forceSay(t){
     if (window.__voiceEnabled !== false){
-      FX.speak(t, UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(t, voiceLang());
     }
   }
 

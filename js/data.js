@@ -168,6 +168,7 @@ const I18N = {
     phonicsTap:'🎤 Tap & Say',
     phonicsListening:'Listening…',
     phonicsNoMic:'Mic not available — tap to answer instead',
+    urduHint:'Urdu mode — same letters, Urdu voice!',
     praises:['Great job!','Awesome!','Wonderful!','Super!','You\u2019re a star!','Fantastic!','Keep it up!','So smart!'],
     tryAgain:'Try again, you\u2019re close!',
     levelWon:'Level Won!',
@@ -244,6 +245,70 @@ const I18N = {
     wrongWord:'लगभग सही! अगला अक्षर दबाओ।',
     timeUp:'समय खत्म!',
     go:'चलो!'
+  },
+  ur:{
+    play:'کھیلیں',
+    tip:'بڑا بٹن دبائیں اور مزے کریں!',
+    homeBubble:'ہیلو! میں زپی ہوں! چلو A B C سیکھیں!',
+    mapTitle:'ایڈونچر نقشہ',
+    tap:'دبائیں!',
+    typeTitle:'حرف ٹائپ کریں!',
+    typeHint:'کی بورڈ پر بٹن دبائیں',
+    typeHintMobile:'نیچے بٹن دبائیں',
+    turboTitle:'تیز ٹائپ!',
+    turboHint:'جتنی تیز ہو سکے ٹائپ کریں!',
+    turboGo:'چلو!',
+    turboTime:'وقت',
+    turboSpeed:'رفتار',
+    turboCPM:'CPM',
+    turboWPM:'WPM',
+    turboBest:'بہترین',
+    whichLetter:'کون سا حرف؟',
+    tapTheLetter:'حرف دبائیں',
+    tapTheWord:'حرف دبائیں جو بناتا ہے',
+    fillMissing:'کیا غائب ہے؟',
+    dragMissing:'حرف کو ڈبے میں رکھیں!',
+    buildWord:'لفظ بنائیں!',
+    buildTap:'حروف کو ترتیب سے دبائیں!',
+    pressStart:'سننے کے لیے دبائیں!',
+    listenBtn:'سننے کے لیے دبائیں',
+    ready:'تیار؟ چلو شروع کریں!',
+    traceMe:'حرف پر لکھیں!',
+    traceTip:'اپنی انگلی سے حرف پر لکھیں',
+    caseMatch:'بڑا چھوٹا ملائیں!',
+    caseTap:'چھوٹا حرف چنیں',
+    memoryTitle:'جوڑی ڈھونڈیں!',
+    memoryTap:'دو پتے پلٹیں',
+    sortTitle:'ترتیب میں لگائیں!',
+    sortHint:'A سے Z تک کھینچیں',
+    spellTitle:'ہجے کریں!',
+    spellHint:'حروف سجائیں',
+    spellVoice:'🎤 ہجے بولیں',
+    spellListening:'سن رہے ہیں…',
+    spellHeard:'سنا',
+    numberTrace:'نمبر پر لکھیں!',
+    numberTip:'انگلی سے لکھیں',
+    countTitle:'کتنے ہیں؟',
+    countHint:'صحیح تعداد چنیں',
+    phonicsTitle:'آواز بولیں!',
+    phonicsHint:'مائک دبائیں اور حرف بولیں',
+    phonicsTap:'🎤 بولیں',
+    phonicsListening:'سن رہے ہیں…',
+    phonicsNoMic:'مائک نہیں — ٹیپ کر کے جواب دیں',
+    urduHint:'اردو موڈ — وہی حروف، اردو آواز!',
+    praises:['شاباش!','بہت اچھے!','شاندار!','سپر!','تم ستارہ ہو!','بہت بڑھیا!','جاری رکھو!','کتنے ہوشیار ہو!'],
+    tryAgain:'دوبارہ کوشش کریں، آپ قریب ہیں!',
+    levelWon:'لیول جیت لیا!',
+    allLetters:'آپ نے تمام 26 حروف لکھ لیے!',
+    newBadge:'نیا اسٹیکر ملا!',
+    starsGot:'ستارے',
+    breakTitle:'تھوڑا آرام کریں!',
+    breakMsg:'پانی پیئیں اور آنکھوں کو آرام دیں۔',
+    breakBtn:'میں تیار ہوں!',
+    parentGate:'بڑوں کے لیے! ستارہ دبا کر رکھیں…',
+    wrongWord:'تقریباً صحیح! اگلا حرف دبائیں۔',
+    timeUp:'وقت ختم!',
+    go:'چلو!'
   }
 };
 
@@ -278,5 +343,8 @@ function pickPraise(){
   return arr[Math.floor(Math.random() * arr.length)];
 }
 function speechTextForLetter(letter){
-  return UI_LANG === 'hi' ? 'अक्षर ' + letter : 'letter ' + letter;
+  if (UI_LANG === 'hi') return 'अक्षर ' + letter;
+  if (UI_LANG === 'ur') return 'حرف ' + letter;
+  return 'letter ' + letter;
 }
+function voiceLang(){ return UI_LANG; }

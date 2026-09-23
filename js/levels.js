@@ -163,7 +163,7 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
       window.Game.hideMascot();
-      FX.speak(tt('whichLetter') + ' ' + q.word, UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(tt('whichLetter') + ' ' + q.word, voiceLang());
     } else if (q.type === 'listen'){
       html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#5fd4a8,#1fc99a)">👂</div><div><b>'+tt('tapTheLetter')+'</b><p>Listen carefully!</p></div></div>';
       html += '<button class="listen-btn" id="btn-replay">🔊 ' + tt('listenBtn') + '</button>';
@@ -185,9 +185,9 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       setupDrag(q);
       window.Game.hideMascot();
-      FX.speak(tt('fillMissing') + '. ', UI_LANG === 'hi' ? 'hi' : 'en');
-      q.seq.forEach((s,i) => window.setTimeout(() => FX.speak(i === q.blank ? '?' : s, UI_LANG === 'hi' ? 'hi' : 'en'), 700 + i*700));
-      window.setTimeout(() => FX.speak(tt('dragMissing'), UI_LANG === 'hi' ? 'hi' : 'en'), 700 + q.seq.length*700);
+      FX.speak(tt('fillMissing') + '. ', voiceLang());
+      q.seq.forEach((s,i) => window.setTimeout(() => FX.speak(i === q.blank ? '?' : s, voiceLang()), 700 + i*700));
+      window.setTimeout(() => FX.speak(tt('dragMissing'), voiceLang()), 700 + q.seq.length*700);
     } else if (q.type === 'word'){
       html += '<div class="big-pic">' + q.emoji + '</div>';
       html += '<div class="action-line">' + tt('buildWord') + ' <span style="color:var(--coral-deep)">'+q.word+'</span></div>';
@@ -196,7 +196,7 @@ const Levels = (function(){
       html += '<div class="option-row">' + shuffle(q.target.slice()).map(l => '<button class="word-chip" data-l="'+l+'">'+l+'</button>').join('') + '</div>';
       cardEl.innerHTML = html;
       window.Game.hideMascot();
-      FX.speak(tt('buildWord') + ' ' + q.word, UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(tt('buildWord') + ' ' + q.word, voiceLang());
     } else if (q.type === 'case'){
       html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#ff7fa3,#ff4d7a)">🔤</div><div><b>'+tt('caseMatch')+'</b><p>'+tt('caseTap')+' '+q.upper+'</p></div></div>';
       html += '<div class="big-pic" style="font-size:64px; font-weight:900; color:'+levelAccent()+'">'+q.upper+'</div>';
@@ -205,7 +205,7 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
       window.Game.hideMascot();
-      FX.speak(q.upper + ' small ' + q.lower, UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(q.upper + ' small ' + q.lower, voiceLang());
     } else if (q.type === 'sort'){
       html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#7ed957,#4caf2b)">↕️</div><div><b>'+tt('sortTitle')+'</b><p>'+tt('sortHint')+'</p></div></div>';
       html += '<div class="sort-row" id="sort-row">' + q.shuffled.map(l => '<div class="sort-chip" data-l="'+l+'">'+l+'</div>').join('') + '</div>';
@@ -213,7 +213,7 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       window.Game.hideMascot();
       setupSort(q);
-      FX.speak(tt('sortTitle'), UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(tt('sortTitle'), voiceLang());
     } else if (q.type === 'spell'){
       html += '<div class="big-pic">' + q.emoji + '</div>';
       html += '<div class="action-line">'+tt('spellTitle')+' <span style="color:'+levelAccent()+'">'+q.word+'</span></div>';
@@ -225,7 +225,7 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       window.Game.hideMascot();
       setupSpellVoice(q);
-      FX.speak(tt('spellTitle')+' '+q.word, UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(tt('spellTitle')+' '+q.word, voiceLang());
     } else if (q.type === 'count'){
       const emojis = Array(q.count).fill(q.emoji).join(' ');
       html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#4ECDC4,#2ec4b6)">🧮</div><div><b>'+tt('countTitle')+'</b><p>'+tt('countHint')+'</p></div></div>';
@@ -235,7 +235,7 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
       window.Game.hideMascot();
-      FX.speak(q.count + ' ' + q.emoji, UI_LANG === 'hi' ? 'hi' : 'en');
+      FX.speak(q.count + ' ' + q.emoji, voiceLang());
     } else if (q.type === 'phonics'){
       const hasMic = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
       html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#FF6B9D,#ff3b6b)">🎤</div><div><b>'+tt('phonicsTitle')+'</b><p>'+tt('phonicsHint')+' — '+q.answer+'</p></div></div>';
@@ -253,7 +253,7 @@ const Levels = (function(){
       if (hasMic){
         setupPhonics(q);
         // auto speak the target
-        FX.speak(q.answer + ' for ' + q.word, UI_LANG === 'hi' ? 'hi' : 'en');
+        FX.speak(q.answer + ' for ' + q.word, voiceLang());
       } else {
         cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
       }
@@ -287,13 +287,13 @@ const Levels = (function(){
       try{
         if (phonicsRec) try{ phonicsRec.abort(); }catch(_){}
         phonicsRec = new Rec();
-        phonicsRec.lang = UI_LANG === 'hi' ? 'hi-IN' : 'en-US';
+        phonicsRec.lang = (voiceLang() === 'ur' ? 'ur-PK' : voiceLang() === 'hi' ? 'hi-IN' : 'en-US');
         phonicsRec.interimResults = false;
         phonicsRec.maxAlternatives = 3;
         listening = true;
         btn.classList.add('listening');
         if (status) status.textContent = tt('phonicsListening');
-        FX.speak(q.answer, UI_LANG === 'hi' ? 'hi' : 'en');
+        FX.speak(q.answer, voiceLang());
         phonicsRec.onresult = (e) => {
           const transcripts = Array.from(e.results[0]).map(r=>r.transcript.toLowerCase()).join(' ');
           const ans = q.answer.toLowerCase();
@@ -353,7 +353,7 @@ const Levels = (function(){
       try{
         if (spellRec) try{ spellRec.abort(); }catch(_){}
         spellRec = new Rec();
-        spellRec.lang = UI_LANG === 'hi' ? 'hi-IN' : 'en-US';
+        spellRec.lang = (voiceLang() === 'ur' ? 'ur-PK' : voiceLang() === 'hi' ? 'hi-IN' : 'en-US');
         spellRec.interimResults = false;
         spellRec.maxAlternatives = 3;
         btn.classList.add('listening');
@@ -406,8 +406,8 @@ const Levels = (function(){
 
   function speakQuestion(q){
     const say = tt('tapTheLetter') + '\u2026 ' + q.answer;
-    FX.speak(say, UI_LANG === 'hi' ? 'hi' : 'en');
-    window.setTimeout(() => FX.speak(q.answer, UI_LANG === 'hi' ? 'hi' : 'en'), 1800);
+    FX.speak(say, voiceLang());
+    window.setTimeout(() => FX.speak(q.answer, voiceLang()), 1800);
   }
 
   function pickLetter(q, btn){
@@ -710,7 +710,7 @@ const Levels = (function(){
       window.addEventListener('keydown', window._kbdHandler);
     }
     // speak current
-    FX.speak(cur + ' for ' + info.word, UI_LANG === 'hi' ? 'hi' : 'en');
+    FX.speak(cur + ' for ' + info.word, voiceLang());
   }
 
   function handleKbdPress(k, btnEl){
@@ -832,7 +832,7 @@ const Levels = (function(){
     bar.innerHTML = '<div class="timer-fill" id="turbo-time-fill" style="width:100%"></div>';
     const cardEl = card();
     cardEl.insertBefore(bar, cardEl.children[2]);
-    FX.speak(tt('turboGo'), UI_LANG === 'hi' ? 'hi' : 'en');
+    FX.speak(tt('turboGo'), voiceLang());
   }
 
   function handleTurboPress(k, btnEl){
