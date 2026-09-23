@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="ABC Champ">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="manifest" href="manifest.json">
 <title>ABC Champ — Fun Alphabet Games for Kids</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -179,8 +178,21 @@
 <script src="js/levels.js"></script>
 <script src="js/game.js"></script>
 <script>
-// PWA install + offline
-if ('serviceWorker' in navigator) {
+// PWA — only on http/https (not file://)
+if (location.protocol !== 'file:') {
+  const m = document.createElement('link');
+  m.rel = 'manifest'; m.href = 'manifest.json';
+  document.head.appendChild(m);
+}
+if (location.protocol === 'file:') {
+  console.warn('Open via http://localhost:8000/ — not file:// — for offline/PWA to work');
+  window.addEventListener('DOMContentLoaded', () => {
+    const tip = document.getElementById('home-tip');
+    if (tip) tip.innerHTML = '⚠️ Please open <b>http://localhost:8000/</b> — not by double-clicking the file — for offline install to work';
+    if (tip) tip.style.background = '#fff3cd';
+  });
+}
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(r => console.log('SW registered', r.scope)).catch(e => console.log('SW failed', e));
   });
