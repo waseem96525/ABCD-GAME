@@ -116,9 +116,12 @@ const FX = (function(){
     if (!('speechSynthesis' in window)) return;
     try {
       const u = new SpeechSynthesisUtterance(text);
-      const wantLang = langKey === 'hi' ? 'hi-IN' : 'en-US';
+      const langMap = { hi:'hi-IN', ur:'ur-PK', en:'en-US' };
+      const wantLang = langMap[langKey] || 'en-US';
+      const wantBase = wantLang.split('-')[0].toLowerCase();
       const voices = window.speechSynthesis.getVoices();
-      const pick = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(wantLang.split('-')[0].toLowerCase()))
+      const pick = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(wantBase))
+                || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en'))
                 || voices.find(v => v.lang && v.lang.toLowerCase() === 'en-us')
                 || voices[0];
       if (pick) u.voice = pick;
