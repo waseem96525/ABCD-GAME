@@ -16,6 +16,11 @@ window.Game = (function(){
       last: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0},
       bestCPM: {12:0},
       bestWPM: {12:0},
+      streak: 0,
+      bestStreak: 0,
+      lastStreakDate: null,
+      coins: 0,
+      lastDailyReward: null,
       badges: [],
       settings: { lang:'en', sfx:true, music:true, voice:true, breakOn:true, breakMin:15 }
     };
@@ -40,6 +45,52 @@ window.Game = (function(){
     S = defaultState();
   }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+  /* ---------------- streak & coins ---------------- */
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function updateStreak(){
+    const today = todayStr();
+    if (S.lastStreakDate === today) return S.streak;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    if (S.lastStreakDate === yesterday){
+      S.streak = (S.streak||0) + 1;
+    } else if (!S.lastStreakDate){
+      S.streak = 1;
+    } else {
+      // gap >1 day
+      const diff = Math.floor((new Date(today) - new Date(S.lastStreakDate))/86400000);
+      if (diff === 1) S.streak = (S.streak||0)+1;
+      else if (diff > 1) S.streak = 1;
+    }
+    S.lastStreakDate = today;
+    S.bestStreak = Math.max(S.bestStreak||0, S.streak);
+    // streak bonus coins
+    let bonus = 0;
+    if (S.streak === 3) bonus = 20;
+    else if (S.streak === 7) bonus = 50;
+    else if (S.streak % 7 === 0 && S.streak > 0) bonus = 30;
+    if (bonus) S.coins = (S.coins||0) + bonus;
+    save();
+    return S.streak;
+  }
+  function addCoinsForStars(stars){
+    const add = stars === 3 ? 10 : stars === 2 ? 5 : 2;
+    S.coins = (S.coins||0) + add;
+    save();
+    return add;
+  }
+  function canClaimDaily(){
+    const today = todayStr();
+    return S.lastDailyReward !== today;
+  }
+  function claimDaily(){
+    if (!canClaimDaily()) return 0;
+    const reward = 10 + (S.streak >= 3 ? 10 : 0) + (S.streak >= 7 ? 20 : 0);
+    S.coins = (S.coins||0) + reward;
+    S.lastDailyReward = todayStr();
+    save();
+    return reward;
+  }
 
   /* ---------------- screen router ---------------- */
   const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash'];
@@ -145,6 +196,12 @@ window.Game = (function(){
       if ((res.wpm||0) > (S.bestWPM[12]||0)) S.bestWPM[12] = res.wpm;
       try{ const lb = parseInt(localStorage.getItem('turboBestCPM')||'0'); if ((res.cpm||0) > lb) localStorage.setItem('turboBestCPM', String(res.cpm)); }catch(_){}
     }
+    // streak + coins
+    updateStreak();
+    const gained = addCoinsForStars(stars);
+    // attach to res for win screen
+    res.coinsGained = gained;
+    res.streak = S.streak;
     if (S.stars[n] > 0) S.unlocked = Math.max(S.unlocked, Math.min(17, n + 1));
 
     /* badges */
@@ -191,11 +248,13 @@ window.Game = (function(){
     const bigBurst = () => burst(window.innerWidth/2, window.innerHeight*0.35);
     window.setTimeout(bigBurst, 300);
     window.setTimeout(bigBurst, 900);
-    // turbo custom bubble with speed
+    // win bubble with speed / coins / streak
     if (n === 12 && res && res.cpm != null){
-      $id('win-bubble').innerHTML = '⚡ ' + res.cpm + ' CPM ('+res.wpm+' WPM) • '+res.correct+'/'+res.total+'<br><small style="font-size:12px;opacity:.9">Best: '+(S.bestCPM[12]||res.cpm)+' CPM</small>';
+      $id('win-bubble').innerHTML = '⚡ ' + res.cpm + ' CPM ('+res.wpm+' WPM) • '+res.correct+'/'+res.total+'<br><small style="font-size:12px;opacity:.9">Best: '+(S.bestCPM[12]||res.cpm)+' CPM • +'+(res.coinsGained||0)+' 🪙 • '+S.streak+' 🔥</small>';
     } else {
-      $id('win-bubble').textContent = n === 1 ? tt('allLetters') : (n === 2 ? tt('allLetters') : pickPraise());
+      const base = n === 1 ? tt('allLetters') : (n === 2 ? tt('allLetters') : pickPraise());
+      const extra = res && res.coinsGained ? '<br><small style="font-size:12px;opacity:.9">+'+res.coinsGained+' 🪙 • '+S.streak+' 🔥 streak</small>' : '';
+      $id('win-bubble').innerHTML = base + extra;
     }
     const nextBtn = $id('btn-win-next');
     if (n >= 17){
@@ -353,6 +412,7 @@ window.Game = (function(){
       '<div class="stat-card" style="--accent:var(--mint)"><div class="num">' + doneLevels + '/17</div><div class="lbl">' + (UI_LANG==='hi'?'लेवल पूरे':UI_LANG==='ur'?'مکمل لیول':'Levels done') + '</div></div>' +
       '<div class="stat-card" style="--accent:var(--grape)"><div class="num">' + totalPlays + '</div><div class="lbl">' + (UI_LANG==='hi'?'खेल':UI_LANG==='ur'?'کھیل':'Plays') + '</div></div>' +
       '</div>';
+    html += '<div class="panel" style="background:linear-gradient(135deg,#fff,#fff6cc); border:1.5px solid #ffd35c;"><h3>🔥 ' + tt('streakTitle') + ' & 🪙</h3><div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;"><div style="font-size:32px; font-weight:900;">'+(S.streak||0)+' 🔥</div><div style="font-size:13px; font-weight:800; color:var(--ink-2); line-height:1.4;">Best: '+(S.bestStreak||0)+' • '+(S.coins||0)+' 🪙<br><small>'+(canClaimDaily() ? tt('dailyReward')+' +' + (10 + (S.streak>=3?10:0) + (S.streak>=7?20:0)) + ' 🪙 — ' + tt('streakKeep') : tt('streakKeep'))+'</small></div><button class="btn tiny" onclick="try{ const r=claimDaily(); if(r){ FX.correct(); burst(window.innerWidth/2, window.innerHeight*0.4); renderDash(); } }catch(_){}" style="margin-left:auto;">'+ (canClaimDaily() ? '🎁 '+tt('dailyReward') : '✓') +'</button></div></div>';
     html += '<div class="panel"><h3>🗺️ ' + (UI_LANG==='hi'?'हर लेवल':UI_LANG==='ur'?'ہر لیول':'Every level') + '</h3>';
     LEVELS_META.forEach((m,i) => {
       const n = i+1;
@@ -461,8 +521,23 @@ window.Game = (function(){
     const done = Object.values(S.stars).filter(v=>v>0).length;
     const hs = $id('home-stars');
     const hl = $id('home-levels');
+    const hk = $id('home-streak');
+    const hc = $id('home-coins');
     if (hs) hs.textContent = totalStars + ' ⭐';
     if (hl) hl.textContent = done + '/17';
+    if (hk) hk.textContent = (S.streak||0) + ' 🔥';
+    if (hc) hc.textContent = (S.coins||0) + '';
+    const dr = $id('daily-reward');
+    const drText = $id('daily-reward-text');
+    if (dr){
+      if (canClaimDaily()){
+        dr.style.display = 'block';
+        const bonus = 10 + (S.streak >= 3 ? 10 : 0) + (S.streak >= 7 ? 20 : 0);
+        if (drText) drText.textContent = tt('dailyReward') + ' +' + bonus + ' 🪙' + (S.streak ? ' • '+S.streak+' 🔥' : '');
+      } else {
+        dr.style.display = 'none';
+      }
+    }
   }
 
   /* ---------------- boot ---------------- */
@@ -472,6 +547,25 @@ window.Game = (function(){
     setLang(S.settings.lang || 'en');
     renderDecor();
     startBreakClock();
+    updateStreak();
+    updateHomeStats();
+
+    // daily reward claim
+    const dailyBtn = $id('btn-daily-claim');
+    if (dailyBtn){
+      dailyBtn.onclick = () => {
+        const r = claimDaily();
+        if (r){
+          FX.correct();
+          burst(window.innerWidth/2, window.innerHeight*0.4);
+          updateHomeStats();
+          dailyBtn.textContent = '✓ ' + r + ' 🪙';
+          setTimeout(()=>{ const dr=$id('daily-reward'); if(dr) dr.style.display='none'; }, 1200);
+        } else {
+          FX.wrong();
+        }
+      };
+    }
 
     $id('btn-play').onclick = () => showScreen('map');
     $id('btn-map-home').onclick = () => showScreen('home');

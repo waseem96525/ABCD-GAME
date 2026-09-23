@@ -140,7 +140,7 @@ body::before{
 @keyframes popIn{from{transform:scale(.6); opacity:0}to{transform:scale(1); opacity:1}}
 
 .home-stats{
-  display:flex; gap:10px; z-index:1;
+  display:flex; gap:8px; z-index:1; flex-wrap:wrap; justify-content:center; max-width:360px;
 }
 .mini-stat{
   display:flex; align-items:center; gap:8px;
