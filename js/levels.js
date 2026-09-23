@@ -73,6 +73,11 @@ const Levels = (function(){
       const distract = pickRand(pool, 3, answer);
       return { type:'count', count, emoji, answer, options: shuffle([answer].concat(distract)) };
     }
+    if (t === 'phonics'){
+      const answer = rndLetter();
+      const alt = pickRand(LETTERS, 3, answer);
+      return { type:'phonics', answer, word: LETTER_DATA[answer].word, emoji: LETTER_DATA[answer].emoji, options: shuffle([answer].concat(alt)) };
+    }
   }
 
   function buildQuestions(n){
@@ -85,9 +90,10 @@ const Levels = (function(){
       8:{types:['case'], count:8},
       10:{types:['sort'], count:6},
       11:{types:['spell'], count:6},
-      14:{types:['count'], count:8}
+      14:{types:['count'], count:8},
+      15:{types:['phonics'], count:8}
     };
-    if (n === 1 || n === 2 || n === 9 || n === 13) return []; // keyboard, trace, memory, number trace are single boards
+    if (n === 1 || n === 2 || n === 9 || n === 12 || n === 13) return []; // keyboard, trace, memory, turbo, number trace are single boards
     const cfg = map[n];
     if (!cfg) return [];
     const list = [];
@@ -227,8 +233,105 @@ const Levels = (function(){
       cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
       window.Game.hideMascot();
       FX.speak(q.count + ' ' + q.emoji, UI_LANG === 'hi' ? 'hi' : 'en');
+    } else if (q.type === 'phonics'){
+      const hasMic = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+      html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#FF6B9D,#ff3b6b)">🎤</div><div><b>'+tt('phonicsTitle')+'</b><p>'+tt('phonicsHint')+' — '+q.answer+'</p></div></div>';
+      html += '<div class="big-pic">' + q.emoji + '</div>';
+      html += '<div class="pic-word">' + q.word + ' — <span style="color:'+levelAccent()+'">'+q.answer+'</span></div>';
+      html += '<button class="mic-btn" id="mic-btn" title="'+tt('phonicsTap')+'">🎤</button>';
+      html += '<div id="mic-status" style="font-size:13px; font-weight:800; color:var(--ink-2); background:rgba(255,255,255,.9); padding:6px 12px; border-radius:40px; border:1px solid rgba(255,255,255,.9); margin-top:6px;">'+tt('phonicsTap')+'</div>';
+      if (hasMic){
+        html += '<div class="phonics-fallback" id="phonics-fallback" style="display:none; margin-top:8px;"><div style="font-size:12px; font-weight:800; color:var(--ink-2);">'+tt('phonicsNoMic')+'</div><div class="option-row" style="margin-top:6px;">' + q.options.map(o => '<button class="opt" data-a="'+o+'">'+o+'</button>').join('') + '</div></div>';
+      } else {
+        html += '<div class="phonics-fallback" id="phonics-fallback" style="margin-top:8px;"><div style="font-size:12px; font-weight:800; color:var(--ink-2);">'+tt('phonicsNoMic')+'</div><div class="option-row" style="margin-top:6px;">' + q.options.map(o => '<button class="opt" data-a="'+o+'">'+o+'</button>').join('') + '</div></div>';
+      }
+      cardEl.innerHTML = html;
+      window.Game.hideMascot();
+      if (hasMic){
+        setupPhonics(q);
+        // auto speak the target
+        FX.speak(q.answer + ' for ' + q.word, UI_LANG === 'hi' ? 'hi' : 'en');
+      } else {
+        cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
+      }
     }
     if (levelNum === 7) startTimer();
+  }
+
+  let phonicsRec = null;
+  function setupPhonics(q){
+    const btn = document.getElementById('mic-btn');
+    const status = document.getElementById('mic-status');
+    const fallback = document.getElementById('phonics-fallback');
+    const hasMic = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!hasMic){
+      if (fallback) fallback.style.display = 'flex';
+      card().querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
+      return;
+    }
+    // fallback tap options also work
+    if (fallback){
+      card().querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
+    }
+    let listening = false;
+    btn.onclick = () => {
+      if (listening || busy) return;
+      const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Rec){
+        if (fallback) fallback.style.display = 'flex';
+        return;
+      }
+      try{
+        if (phonicsRec) try{ phonicsRec.abort(); }catch(_){}
+        phonicsRec = new Rec();
+        phonicsRec.lang = UI_LANG === 'hi' ? 'hi-IN' : 'en-US';
+        phonicsRec.interimResults = false;
+        phonicsRec.maxAlternatives = 3;
+        listening = true;
+        btn.classList.add('listening');
+        if (status) status.textContent = tt('phonicsListening');
+        FX.speak(q.answer, UI_LANG === 'hi' ? 'hi' : 'en');
+        phonicsRec.onresult = (e) => {
+          const transcripts = Array.from(e.results[0]).map(r=>r.transcript.toLowerCase()).join(' ');
+          const ans = q.answer.toLowerCase();
+          const word = q.word.toLowerCase();
+          const said = transcripts.includes(ans) || transcripts.includes(word) || transcripts.trim() === ans;
+          if (said){
+            btn.classList.remove('listening');
+            listening = false;
+            // visual correct
+            btn.style.background = 'linear-gradient(180deg,#5fd4a8,#1fc99a)';
+            window.Game.burstFromElement(btn);
+            correctAnswer();
+          } else {
+            btn.classList.remove('listening');
+            listening = false;
+            if (status) status.textContent = 'Heard: "'+transcripts.split(' ')[0]+'" — '+tt('tryAgain');
+            FX.wrong();
+            if (fallback) fallback.style.display = 'flex';
+            window.Game.showMascot(tt('tryAgain'));
+          }
+        };
+        phonicsRec.onerror = () => {
+          listening = false;
+          btn.classList.remove('listening');
+          if (status) status.textContent = tt('tryAgain');
+          if (fallback) fallback.style.display = 'flex';
+        };
+        phonicsRec.onend = () => {
+          listening = false;
+          btn.classList.remove('listening');
+          if (status && status.textContent === tt('phonicsListening')) status.textContent = tt('phonicsTap');
+        };
+        phonicsRec.start();
+        // auto-stop after 4s
+        setTimeout(()=>{ try{ phonicsRec.stop(); }catch(_){} }, 4000);
+      } catch(err){
+        listening = false;
+        btn.classList.remove('listening');
+        if (fallback) fallback.style.display = 'flex';
+      }
+    };
   }
 
   function speakQuestion(q){
@@ -906,7 +1009,7 @@ const Levels = (function(){
   function cleanup(){
     if (turboTimer){ clearInterval(turboTimer); turboTimer=null; }
     turboActive=false;
-    // keep handlers but they are gated by levelNum/turboActive, no need to remove
+    if (phonicsRec){ try{ phonicsRec.abort(); }catch(_){} phonicsRec=null; }
   }
 
   return { runLevel, cleanup };

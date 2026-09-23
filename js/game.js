@@ -2,18 +2,18 @@
 window.Game = (function(){
 
   /* ---------------- state ---------------- */
-  const KEY = 'abcChampProgress_v4'; // bumped for 14-level layout (Numbers)
+  const KEY = 'abcChampProgress_v5'; // bumped for 15-level layout (Phonics)
   let S = null;
   let lastUnlock = 0;          /* timestamp of successful gate */
   let gateTimer = null;
 
   function defaultState(){
     return {
-      stars: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},
+      stars: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0},
       unlocked: 1,
-      plays: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},
-      acc: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},
-      last: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},
+      plays: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0},
+      acc: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0},
+      last: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0},
       bestCPM: {12:0},
       bestWPM: {12:0},
       badges: [],
@@ -26,8 +26,8 @@ window.Game = (function(){
       if (raw){
         const o = JSON.parse(raw);
         const d = defaultState();
-        // migrate old saves to 14 levels
-        for (let k of [1,2,3,4,5,6,7,8,9,10,11,12,13,14]){
+        // migrate old saves to 15 levels
+        for (let k of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]){
           if (o.stars && o.stars[k] == null) o.stars[k]=0;
           if (o.plays && o.plays[k] == null) o.plays[k]=0;
           if (o.acc && o.acc[k] == null) o.acc[k]=0;
@@ -145,16 +145,16 @@ window.Game = (function(){
       if ((res.wpm||0) > (S.bestWPM[12]||0)) S.bestWPM[12] = res.wpm;
       try{ const lb = parseInt(localStorage.getItem('turboBestCPM')||'0'); if ((res.cpm||0) > lb) localStorage.setItem('turboBestCPM', String(res.cpm)); }catch(_){}
     }
-    if (S.stars[n] > 0) S.unlocked = Math.max(S.unlocked, Math.min(14, n + 1));
+    if (S.stars[n] > 0) S.unlocked = Math.max(S.unlocked, Math.min(15, n + 1));
 
     /* badges */
     const newBadges = [];
     if (S.stars[n] > 0 && S.badges.indexOf(n) === -1){
       S.badges.push(n); newBadges.push(n);
     }
-    const allDone = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].every(k => S.stars[k] > 0);
+    const allDone = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].every(k => S.stars[k] > 0);
     if (allDone && S.badges.indexOf('all') === -1){ S.badges.push('all'); newBadges.push('all'); }
-    const allStars = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].every(k => S.stars[k] >= 3);
+    const allStars = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].every(k => S.stars[k] >= 3);
     if (allStars && S.badges.indexOf('stars') === -1){ S.badges.push('stars'); newBadges.push('stars'); }
 
     save();
@@ -198,7 +198,7 @@ window.Game = (function(){
       $id('win-bubble').textContent = n === 1 ? tt('allLetters') : (n === 2 ? tt('allLetters') : pickPraise());
     }
     const nextBtn = $id('btn-win-next');
-    if (n >= 14){
+    if (n >= 15){
       nextBtn.textContent = '🗺️ ' + (UI_LANG === 'hi' ? 'नक्शा' : 'Map');
       nextBtn.onclick = () => showScreen('map');
     } else {
@@ -210,15 +210,16 @@ window.Game = (function(){
   }
 
   /* ---------------- progress map ---------------- */
-  const NODE_POS = [[30,5],[70,11],[30,18],[70,25],[30,33],[70,41],[30,49],[70,57],[30,65],[70,73],[30,81],[70,87],[30,93],[70,97]];
+  const NODE_POS = [[30,4],[70,10],[30,17],[70,23],[30,30],[70,37],[30,44],[70,51],[30,58],[70,65],[30,72],[70,78],[30,84],[70,90],[48,97]];
   const WORLD_LABELS = [
-    {y:8, text:'⌨️ World 1 — Type'},
-    {y:24, text:'🧩 World 2 — Puzzle'},
-    {y:40, text:'🔤 World 3 — Letters'},
-    {y:56, text:'🎴 World 4 — Memory'},
-    {y:72, text:'✨ World 5 — Words'},
-    {y:86, text:'⚡ World 6 — Turbo'},
-    {y:94, text:'🔢 World 7 — Numbers'}
+    {y:7, text:'⌨️ World 1 — Type'},
+    {y:21, text:'🧩 World 2 — Puzzle'},
+    {y:35, text:'🔤 World 3 — Letters'},
+    {y:49, text:'🎴 World 4 — Memory'},
+    {y:63, text:'✨ World 5 — Words'},
+    {y:76, text:'⚡ World 6 — Turbo'},
+    {y:88, text:'🔢 World 7 — Numbers'},
+    {y:96, text:'🎤 World 8 — Voice'}
   ];
   function renderMap(){
     const pathEl = $id('map-path');
@@ -345,10 +346,10 @@ window.Game = (function(){
     const totalStars = Object.values(S.stars).reduce((a,b)=>a+b,0);
     const doneLevels = Object.values(S.stars).filter(v=>v>0).length;
     const totalPlays = Object.values(S.plays).reduce((a,b)=>a+b,0);
-    let html = '<div class="dash-hero"><div class="av">🦊</div><div><div style="font-weight:900; font-size:18px">Zippy & Friends</div><div style="font-size:13px; opacity:.9">'+doneLevels+'/14 levels • '+totalStars+'⭐ collected</div></div></div>';
+    let html = '<div class="dash-hero"><div class="av">🦊</div><div><div style="font-weight:900; font-size:18px">Zippy & Friends</div><div style="font-size:13px; opacity:.9">'+doneLevels+'/15 levels • '+totalStars+'⭐ collected</div></div></div>';
     html += '<div class="stat-row">' +
       '<div class="stat-card" style="--accent:var(--sun)"><div class="num">' + totalStars + '⭐</div><div class="lbl">' + (UI_LANG==='hi'?'कुल सितारे':'Total stars') + '</div></div>' +
-      '<div class="stat-card" style="--accent:var(--mint)"><div class="num">' + doneLevels + '/14</div><div class="lbl">' + (UI_LANG==='hi'?'लेवल पूरे':'Levels done') + '</div></div>' +
+      '<div class="stat-card" style="--accent:var(--mint)"><div class="num">' + doneLevels + '/15</div><div class="lbl">' + (UI_LANG==='hi'?'लेवल पूरे':'Levels done') + '</div></div>' +
       '<div class="stat-card" style="--accent:var(--grape)"><div class="num">' + totalPlays + '</div><div class="lbl">' + (UI_LANG==='hi'?'खेल':'Plays') + '</div></div>' +
       '</div>';
     html += '<div class="panel"><h3>🗺️ ' + (UI_LANG==='hi'?'हर लेवल':'Every level') + '</h3>';
@@ -460,7 +461,7 @@ window.Game = (function(){
     const hs = $id('home-stars');
     const hl = $id('home-levels');
     if (hs) hs.textContent = totalStars + ' ⭐';
-    if (hl) hl.textContent = done + '/14';
+    if (hl) hl.textContent = done + '/15';
   }
 
   /* ---------------- boot ---------------- */

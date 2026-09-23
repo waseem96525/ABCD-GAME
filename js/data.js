@@ -78,7 +78,7 @@ const SPELL_POOL = [
   {word:'HEART',emoji:'❤️'}
 ];
 
-/* -------------------- Level names / icons (14 levels — Type first, Trace kept as #2, Turbo + Numbers) -------------------- */
+/* -------------------- Level names / icons (15 levels — Type first, Trace kept as #2, Turbo + Numbers + Phonics) -------------------- */
 const LEVELS_META = [
   {name:'Type & Learn',  icon:'⌨️', color:'#FF6B6B'},
   {name:'Trace & Write', icon:'✏️', color:'#ff7e6b'},
@@ -93,7 +93,8 @@ const LEVELS_META = [
   {name:'Spell Star',    icon:'✨', color:'#b983ff'},
   {name:'Turbo Type',    icon:'⚡', color:'#00D1FF'},
   {name:'Number Trace',  icon:'🔢', color:'#FF9F1C'},
-  {name:'Count with Zippy', icon:'🧮', color:'#4ECDC4'}
+  {name:'Count with Zippy', icon:'🧮', color:'#4ECDC4'},
+  {name:'Say the Sound', icon:'🎤', color:'#FF6B9D'}
 ];
 
 const BADGES = [
@@ -111,6 +112,7 @@ const BADGES = [
   {id:12,icon:'⚡', name:'Turbo Typer'},
   {id:13,icon:'🔢', name:'Number Ninja'},
   {id:14,icon:'🧮', name:'Counting Star'},
+  {id:15,icon:'🎤', name:'Phonics Star'},
   {id:'all', icon:'🏅', name:'Adventure Star'},
   {id:'stars', icon:'⭐', name:'Shiny Champion'}
 ];
@@ -158,6 +160,11 @@ const I18N = {
     numberTip:'Use finger to draw',
     countTitle:'How many?',
     countHint:'Tap the correct number',
+    phonicsTitle:'Say the Sound!',
+    phonicsHint:'Tap mic & say the letter',
+    phonicsTap:'🎤 Tap & Say',
+    phonicsListening:'Listening…',
+    phonicsNoMic:'Mic not available — tap to answer instead',
     praises:['Great job!','Awesome!','Wonderful!','Super!','You\u2019re a star!','Fantastic!','Keep it up!','So smart!'],
     tryAgain:'Try again, you\u2019re close!',
     levelWon:'Level Won!',
@@ -213,6 +220,11 @@ const I18N = {
     numberTip:'उंगली से लिखो',
     countTitle:'कितने हैं?',
     countHint:'सही संख्या चुनो',
+    phonicsTitle:'आवाज़ बोलो!',
+    phonicsHint:'माइक दबाओ और बोलो',
+    phonicsTap:'🎤 बोलो',
+    phonicsListening:'सुन रहे हैं…',
+    phonicsNoMic:'माइक नहीं — टैप करके जवाब दो',
     praises:['शाबाश!','बहुत अच्छे!','शानदार!','सुपर!','तुम तारा हो!','बहुत बढ़िया!','जारी रखो!','कितने स्मार्ट हो!'],
     tryAgain:'फिर कोशिश करो, तुम पास ही हो!',
     levelWon:'लेवल जीत गए!',
