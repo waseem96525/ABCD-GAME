@@ -21,6 +21,8 @@ window.Game = (function(){
       lastStreakDate: null,
       coins: 0,
       lastDailyReward: null,
+      shopOwned: [],
+      shopEquipped: null,
       badges: [],
       settings: { lang:'en', sfx:true, music:true, voice:true, breakOn:true, breakMin:15 }
     };
@@ -93,7 +95,7 @@ window.Game = (function(){
   }
 
   /* ---------------- screen router ---------------- */
-  const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash'];
+  const SCREENS = ['screen-home','screen-map','screen-level','screen-win','screen-dash','screen-shop'];
   let currentScreen = 'screen-home';
   function showScreen(name){
     if (currentScreen === 'level' && name !== 'level'){
@@ -444,6 +446,64 @@ window.Game = (function(){
     cont.innerHTML = html;
   }
 
+  /* ---------------- shop ---------------- */
+  function renderShop(){
+    const cont = $id('shop-content');
+    if (!cont) return;
+    S.shopOwned = S.shopOwned || [];
+    let html = '<div class="shop-coins"><span style="font-weight:900; font-size:18px;">🪙 '+(S.coins||0)+' Coins</span><span style="font-size:12px; font-weight:800; color:var(--ink-2);">'+tt('shopHint')+'</span></div>';
+    html += '<div class="shop-preview"><div class="mascot-home small" style="margin-bottom:0"><svg class="fox-img"><use href="#fox"/></svg><div class="shop-hat" id="shop-hat-preview" style="position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:32px;">'+(S.shopEquipped ? (SHOP_ITEMS.find(s=>s.id===S.shopEquipped)?.icon||'') : '')+'</div></div><div style="font-size:13px; font-weight:800; color:var(--ink-2);">'+(S.shopEquipped ? SHOP_ITEMS.find(s=>s.id===S.shopEquipped)?.name : 'No hat')+'</div></div>';
+    html += '<div class="shop-grid">';
+    SHOP_ITEMS.forEach(item=>{
+      const owned = (S.shopOwned||[]).includes(item.id);
+      const equipped = S.shopEquipped === item.id;
+      const canBuy = !owned && (S.coins||0) >= item.price;
+      html += '<div class="shop-card'+(owned?' owned':'')+(equipped?' equipped':'')+'"><div class="shop-icon" style="background:linear-gradient(180deg,'+ (equipped?'#fff6cc,#ffd35c':'#fff,#eef6ff')+')">'+item.icon+'</div><div class="shop-name">'+item.name+'</div><div class="shop-price">'+ (owned ? (equipped ? tt('equipped') : tt('owned')) : item.price+' 🪙') +'</div>';
+      if (!owned){
+        html += '<button class="btn tiny '+(canBuy?'btn-primary':'')+'" onclick="Game.buyShop(\''+item.id+'\')" '+(canBuy?'':'disabled style="opacity:.5"')+'>'+ (canBuy ? tt('buy') : tt('needCoins')) +'</button>';
+      } else if (!equipped){
+        html += '<button class="btn tiny btn-primary" onclick="Game.equipShop(\''+item.id+'\')">Wear</button>';
+      } else {
+        html += '<button class="btn tiny" disabled>✓ '+tt('equipped')+'</button>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    cont.innerHTML = html;
+    updateShopFox();
+  }
+  function updateShopFox(){
+    const hat = document.getElementById('shop-hat-preview');
+    const equipped = S.shopEquipped ? SHOP_ITEMS.find(s=>s.id===S.shopEquipped) : null;
+    // also update home fox hat if exists
+    const homeHat = document.getElementById('home-fox-hat');
+    const txt = equipped ? equipped.icon : '';
+    if (hat) hat.textContent = txt;
+    if (homeHat) homeHat.textContent = txt;
+  }
+  function buyShop(id){
+    const item = SHOP_ITEMS.find(s=>s.id===id);
+    if (!item) return;
+    S.shopOwned = S.shopOwned || [];
+    if (S.shopOwned.includes(id)) return;
+    if ((S.coins||0) < item.price){ FX.wrong(); return; }
+    S.coins -= item.price;
+    S.shopOwned.push(id);
+    save();
+    FX.correct();
+    burst(window.innerWidth/2, window.innerHeight*0.4);
+    renderShop();
+    updateHomeStats();
+  }
+  function equipShop(id){
+    if (!(S.shopOwned||[]).includes(id)) return;
+    S.shopEquipped = id;
+    save();
+    FX.click();
+    renderShop();
+    updateHomeStats();
+  }
+
   /* ---------------- win replay target ---------------- */
   let currentWinLevel = 1;
 
@@ -538,6 +598,8 @@ window.Game = (function(){
         dr.style.display = 'none';
       }
     }
+    // update fox hat
+    updateShopFox();
   }
 
   /* ---------------- boot ---------------- */
@@ -572,6 +634,8 @@ window.Game = (function(){
     $id('btn-level-back').onclick = () => { FX.stopSpeaking(); hideMascot(); try{ Levels.cleanup(); }catch(_){} showScreen('map'); };
     $id('btn-win-replay').onclick = () => runLevel(currentWinLevel);
     $id('btn-dash-back').onclick = () => showScreen('home');
+    $id('btn-shop-back').onclick = () => showScreen('home');
+    $id('btn-home-shop').onclick = () => { renderShop(); showScreen('shop'); updateShopFox(); };
     $id('btn-home-settings').onclick = openGate;
     $id('btn-dash').onclick = () => { $id('settings-modal').classList.add('hide'); renderDash(); showScreen('dash'); };
 
@@ -623,6 +687,6 @@ window.Game = (function(){
   return {
     runLevel, finishLevel, setLevelHeader,
     showMascot, hideMascot, burst, burstFromElement,
-    showScreen
+    showScreen, buyShop, equipShop, renderShop, updateShopFox, renderDash
   };
 })();

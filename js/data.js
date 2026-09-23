@@ -100,6 +100,17 @@ const LEVELS_META = [
   {name:'Take Away',     icon:'➖', color:'#FF6B6B'}
 ];
 
+const SHOP_ITEMS = [
+  {id:'hat1',  name:'Cool Cap',     icon:'🧢', price:30, type:'hat'},
+  {id:'hat2',  name:'Magic Hat',    icon:'🎩', price:50, type:'hat'},
+  {id:'hat3',  name:'Crown',        icon:'👑', price:80, type:'hat'},
+  {id:'hat4',  name:'Graduation',   icon:'🎓', price:60, type:'hat'},
+  {id:'acc1',  name:'Star Glasses', icon:'🤓', price:40, type:'acc'},
+  {id:'acc2',  name:'Bow Tie',      icon:'🎀', price:35, type:'acc'},
+  {id:'bg1',   name:'Rainbow BG',   icon:'🌈', price:45, type:'bg'},
+  {id:'bg2',   name:'Space BG',     icon:'🚀', price:70, type:'bg'}
+];
+
 const BADGES = [
   {id:1, icon:'⌨️', name:'Keyboard Star'},
   {id:2, icon:'🖍️', name:'Alphabet Artist'},
@@ -181,6 +192,12 @@ const I18N = {
     streakDays:'day streak',
     streakBonus:'Bonus!',
     streakKeep:'Play tomorrow to keep it!',
+    shopTitle:'Zippy Shop',
+    shopHint:'Spend 🪙 to dress Zippy!',
+    owned:'Owned',
+    equipped:'Wearing',
+    buy:'Buy',
+    needCoins:'Need more 🪙',
     dailyReward:'Daily Reward',
     urduHint:'Urdu mode — same letters, Urdu voice!',
     praises:['Great job!','Awesome!','Wonderful!','Super!','You\u2019re a star!','Fantastic!','Keep it up!','So smart!'],
@@ -254,6 +271,12 @@ const I18N = {
     streakDays:'दिन लगातार',
     streakBonus:'बोनस!',
     streakKeep:'कल खेलो तो जारी रहेगा!',
+    shopTitle:'ज़िप्पी दुकान',
+    shopHint:'🪙 से ज़िप्पी को सजाओ!',
+    owned:'खरीदा',
+    equipped:'पहना हुआ',
+    buy:'खरीदो',
+    needCoins:'और 🪙 चाहिए',
     dailyReward:'रोज़ का इनाम',
     praises:['शाबाश!','बहुत अच्छे!','शानदार!','सुपर!','तुम तारा हो!','बहुत बढ़िया!','जारी रखो!','कितने स्मार्ट हो!'],
     tryAgain:'फिर कोशिश करो, तुम पास ही हो!',
@@ -326,6 +349,12 @@ const I18N = {
     streakDays:'دن مسلسل',
     streakBonus:'بونس!',
     streakKeep:'کل کھیلیں تو جاری رہے گا!',
+    shopTitle:'زپی شاپ',
+    shopHint:'🪙 سے زپی کو سجائیں!',
+    owned:'خریدا',
+    equipped:'پہنا ہوا',
+    buy:'خریدیں',
+    needCoins:'مزید 🪙 چاہیے',
     dailyReward:'روزانہ انعام',
     urduHint:'اردو موڈ — وہی حروف، اردو آواز!',
     praises:['شاباش!','بہت اچھے!','شاندار!','سپر!','تم ستارہ ہو!','بہت بڑھیا!','جاری رکھو!','کتنے ہوشیار ہو!'],

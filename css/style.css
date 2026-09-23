@@ -457,6 +457,18 @@ body::before{
 .btn.tiny{font-size:14px; padding:8px 14px; border-radius:40px;}
 .btn.danger{background:linear-gradient(180deg,#ff9d8c,#ff6f5b); color:#fff;}
 
+.shop-coins{display:flex; justify-content:space-between; align-items:center; background:linear-gradient(180deg,#fff,#fff6cc); border:1.5px solid #ffd35c; border-radius:16px; padding:10px 14px; box-shadow:var(--shadow-soft);}
+.shop-preview{display:flex; flex-direction:column; align-items:center; gap:6px; background:rgba(255,255,255,.9); border-radius:18px; padding:12px; border:1.5px solid rgba(255,255,255,.9); box-shadow:var(--shadow-soft); position:relative;}
+.shop-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+@media (min-width:400px){ .shop-grid{grid-template-columns:repeat(4,1fr);} }
+.shop-card{background:rgba(255,255,255,.96); border-radius:18px; padding:12px 10px; text-align:center; border:1.5px solid rgba(255,255,255,.9); box-shadow:var(--shadow-soft); display:flex; flex-direction:column; gap:6px; align-items:center; position:relative; overflow:hidden;}
+.shop-card.owned{border-color:#ffd35c; background:linear-gradient(180deg,#fff,#fff6cc);}
+.shop-card.equipped{border-color:var(--mint); background:linear-gradient(180deg,#e8fbf2,#c8f5e2); box-shadow:0 6px 14px rgba(31,201,154,.18);}
+.shop-card.equipped::after{content:"✓"; position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:50%; background:var(--mint); color:#fff; font-size:12px; display:grid; place-items:center; font-weight:900;}
+.shop-icon{width:56px; height:56px; border-radius:16px; display:grid; place-items:center; font-size:28px; background:linear-gradient(180deg,#fff,#eef6ff); border:1.5px solid rgba(255,255,255,.9); box-shadow:inset 0 1px 0 #fff;}
+.shop-name{font-size:12px; font-weight:900; line-height:1.1;}
+.shop-price{font-size:11px; font-weight:800; color:var(--ink-2); background:rgba(255,255,255,.9); padding:3px 8px; border-radius:40px; border:1px solid rgba(255,255,255,.9);}
+
 .mascot-home.small .fox-img{width:108px; height:108px;}
 .mascot-home.small .bubble{margin-top:8px; font-size:15px; padding:10px 14px;}
 

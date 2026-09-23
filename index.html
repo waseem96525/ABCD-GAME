@@ -40,10 +40,14 @@
 <section id="screen-home" class="screen active">
   <div class="home-top">
     <div class="logo">ABC<span>Champ</span></div>
-    <button id="btn-home-settings" class="round-btn gear" title="Parents / Settings">&#9881;</button>
+    <div style="display:flex; gap:8px;">
+      <button id="btn-home-shop" class="round-btn" title="Shop" style="font-size:22px;">🛍️</button>
+      <button id="btn-home-settings" class="round-btn gear" title="Parents / Settings">&#9881;</button>
+    </div>
   </div>
   <div class="home-stage">
-    <div class="mascot-home">
+    <div class="mascot-home" style="position:relative;">
+      <div id="home-fox-hat" style="position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-size:34px; z-index:2; pointer-events:none;"></div>
       <svg class="fox-img"><use href="#fox"/></svg>
       <div class="bubble" id="home-bubble">Hi! I&rsquo;m Zippy the Fox! Let&rsquo;s learn A B C!</div>
     </div>
@@ -111,6 +115,16 @@
     </div>
     <div style="margin-top:12px; font-size:12px; font-weight:900; color:#6b4a00; background:rgba(255,255,255,.9); padding:6px 12px; border-radius:40px; border:1px solid rgba(255,255,255,.9);">💖 THIS GAME IS MADE BY ZUNAISHA'S FATHER WASEEM 💖</div>
   </div>
+</section>
+
+<!-- ============ SHOP ============ -->
+<section id="screen-shop" class="screen">
+  <header class="topbar">
+    <button id="btn-shop-back" class="round-btn">&#8592;</button>
+    <h2 id="shop-title">Zippy Shop</h2>
+    <div class="header-spacer"></div>
+  </header>
+  <div id="shop-content" class="dash-scroll"></div>
 </section>
 
 <!-- ============ PARENT DASHBOARD ============ -->
