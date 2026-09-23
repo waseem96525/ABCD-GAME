@@ -377,7 +377,7 @@ window.Game = (function(){
     });
     html += '</div></div>';
     html += '<p style="text-align:center;color:#8aa0bd;font-size:13px">ABC Champ \u00b7 Made for kids \u00b7 No ads \u00b7 Works offline \u00b7 COPPA-friendly</p>';
-    html += '<p style="text-align:center; font-size:13px; font-weight:900; color:#3a2d5e; margin-top:10px; background:linear-gradient(180deg,#fff,#fff6cc); padding:8px 14px; border-radius:40px; border:1.5px solid #ffd35c; display:inline-block; width:100%;">💖 THIS GAME IS MADE BY ZUNAISHA'S FATHER WASEEM 💖</p>';
+    html += "<p style=\"text-align:center; font-size:13px; font-weight:900; color:#3a2d5e; margin-top:10px; background:linear-gradient(180deg,#fff,#fff6cc); padding:8px 14px; border-radius:40px; border:1.5px solid #ffd35c; display:inline-block; width:100%;\">💖 THIS GAME IS MADE BY ZUNAISHA'S FATHER WASEEM 💖</p>";
     cont.innerHTML = html;
   }
 
