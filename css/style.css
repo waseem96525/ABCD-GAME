@@ -67,9 +67,12 @@ body::before{
   position:fixed; inset:0; z-index:1;
   display:none; flex-direction:column;
   padding:14px 16px calc(16px + env(safe-area-inset-bottom));
-  overflow:hidden;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
 }
 .screen.active{display:flex; animation:screenIn .38s cubic-bezier(.2,.8,.3,1);}
+#screen-home{overflow-y:auto;}
+#screen-home .home-stage{flex:none; min-height:0; padding:8px 0 12px;}
 @keyframes screenIn{from{opacity:0; transform:translateY(14px) scale(.98)}to{opacity:1; transform:none}}
 
 /* topbar – frosted */
