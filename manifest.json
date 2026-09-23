@@ -1,0 +1,42 @@
+{
+  "name": "ABC Champ — Alphabet Adventure",
+  "short_name": "ABC Champ",
+  "description": "Kids educational game (3-7 yrs) — learn A-Z through 12 fun levels. Works offline!",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#eaf9ff",
+  "theme_color": "#8ed4f2",
+  "categories": ["education", "kids", "games"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Now",
+      "url": "./",
+      "description": "Start playing ABC Champ"
+    }
+  ],
+  "screenshots": []
+}

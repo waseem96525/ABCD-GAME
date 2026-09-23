@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#8ed4f2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ABC Champ">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>ABC Champ — Fun Alphabet Games for Kids</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- floating background shapes -->
+<div id="bg-decor" aria-hidden="true"></div>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="fox" viewBox="0 0 120 120">
+    <path d="M36 52 L12 10 L56 34 L64 34 L108 10 L84 52 Z" fill="#d97b1f"/>
+    <path d="M36 52 L18 15 L54 36 L66 36 L102 15 L84 52 Z" fill="#f6a53c"/>
+    <path d="M36 52 L22 18 L50 35 Z" fill="#ffd9c2"/>
+    <path d="M84 52 L98 18 L70 35 Z" fill="#ffd9c2"/>
+    <circle cx="60" cy="70" r="34" fill="#f6a53c"/>
+    <ellipse cx="60" cy="84" rx="24" ry="14" fill="#fff8ef"/>
+    <circle cx="48" cy="64" r="4.6" fill="#26221e"/>
+    <circle cx="72" cy="64" r="4.6" fill="#26221e"/>
+    <circle cx="49.6" cy="62.6" r="1.5" fill="#fff"/>
+    <circle cx="73.6" cy="62.6" r="1.5" fill="#fff"/>
+    <path d="M60 74 L55 79 L65 79 Z" fill="#26221e"/>
+    <path d="M46 78 Q60 90 74 78" stroke="#26221e" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="36" cy="76" r="5" fill="#ff9f9f" opacity="0.55"/>
+    <circle cx="84" cy="76" r="5" fill="#ff9f9f" opacity="0.55"/>
+    <path d="M76 60 q2 -5 7 -4 M44 60 q-2 -5 -7 -4" stroke="#e0801f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<!-- ============ HOME ============ -->
+<section id="screen-home" class="screen active">
+  <div class="home-top">
+    <div class="logo">ABC<span>Champ</span></div>
+    <button id="btn-home-settings" class="round-btn gear" title="Parents / Settings">&#9881;</button>
+  </div>
+  <div class="home-stage">
+    <div class="mascot-home">
+      <svg class="fox-img"><use href="#fox"/></svg>
+      <div class="bubble" id="home-bubble">Hi! I&rsquo;m Zippy the Fox! Let&rsquo;s learn A B C!</div>
+    </div>
+    <div class="home-stats">
+      <div class="mini-stat"><i class="s">⭐</i><span id="home-stars">0 ⭐</span></div>
+      <div class="mini-stat"><i class="l">🗺️</i><span id="home-levels">0/12</span></div>
+    </div>
+    <button id="btn-play" class="big-play">&#9654; Play</button>
+    <button id="btn-install" class="btn tiny" style="display:none; margin-top:8px; background:linear-gradient(180deg,#fff,#eef6ff);">⬇️ Install App</button>
+    <div class="sub-tip" id="home-tip">Tap the big button to start your adventure!</div>
+  </div>
+  <div class="lang-row">
+    <button class="chip" data-lang="en">English</button>
+    <button class="chip" data-lang="hi">हिंदी</button>
+  </div>
+  <div class="made-for">Made for kids &middot; No ads &middot; Works offline</div>
+</section>
+
+<!-- ============ MAP ============ -->
+<section id="screen-map" class="screen">
+  <header class="topbar">
+    <button id="btn-map-home" class="round-btn">&#8592;</button>
+    <h2 id="map-title">Adventure Map</h2>
+    <div class="header-spacer"></div>
+  </header>
+  <div id="map-wrap">
+    <div class="map-legend"><span>🟢 Open</span><span>⭐ Stars</span><span>🔒 Locked</span></div>
+    <svg id="map-line" aria-hidden="true"></svg>
+    <div id="map-path"></div>
+  </div>
+</section>
+
+<!-- ============ LEVEL ============ -->
+<section id="screen-level" class="screen">
+  <header class="topbar">
+    <button id="btn-level-back" class="round-btn">&#8592;</button>
+    <h2 id="level-title"></h2>
+    <div id="level-stars" class="stars-mini"></div>
+  </header>
+  <div id="level-body" class="level-body"></div>
+</section>
+
+<!-- ============ WIN ============ -->
+<section id="screen-win" class="screen">
+  <div id="win-content">
+    <h2 id="win-title">Level Won!</h2>
+    <div id="win-stars" class="win-stars"></div>
+    <div id="win-badge" class="win-badge hide"></div>
+    <div class="mascot-home small">
+      <svg class="fox-img"><use href="#fox"/></svg>
+      <div class="bubble" id="win-bubble">Yay! You did it!</div>
+    </div>
+    <div class="win-btns">
+      <button id="btn-win-replay" class="btn">&#8635; Again</button>
+      <button id="btn-win-next" class="btn btn-primary">Next &#9654;</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARENT DASHBOARD ============ -->
+<section id="screen-dash" class="screen">
+  <header class="topbar">
+    <button id="btn-dash-back" class="round-btn">&#8592;</button>
+    <h2>Parents</h2>
+    <div class="header-spacer"></div>
+  </header>
+  <div id="dash-content" class="dash-scroll"></div>
+</section>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div id="gate-overlay" class="overlay hide">
+  <div class="gate-card">
+    <div class="bubble">For grown-ups! Press &amp; hold the star&#8230;</div>
+    <button id="gate-hold" class="gate-star">&#11088;</button>
+    <div class="gate-bar"><div id="gate-fill"></div></div>
+    <button id="gate-cancel" class="btn tiny">Cancel</button>
+  </div>
+</div>
+
+<div id="settings-modal" class="overlay hide">
+  <div class="settings-card">
+    <h2>Settings</h2>
+    <label class="set-row"><span>Sound effects</span><input type="checkbox" id="set-sfx" checked></label>
+    <label class="set-row"><span>Background music</span><input type="checkbox" id="set-music" checked></label>
+    <label class="set-row"><span>Voice instructions</span><input type="checkbox" id="set-voice" checked></label>
+    <div class="set-row"><span>Language</span>
+      <div class="mini-toggle">
+        <button class="chip" data-lang="en">English</button>
+        <button class="chip" data-lang="hi">हिंदी</button>
+      </div>
+    </div>
+    <label class="set-row"><span>Break reminder</span><input type="checkbox" id="set-break" checked></label>
+    <div class="set-row"><span>Break after</span>
+      <div id="break-min-opts" class="mini-toggle">
+        <button class="chip" data-min="10">10</button>
+        <button class="chip" data-min="15">15</button>
+        <button class="chip" data-min="20">20</button>
+      </div>
+      <span class="unit">min</span>
+    </div>
+    <div class="set-row danger"><span>Reset all progress</span><button id="btn-reset" class="btn tiny">Reset</button></div>
+    <div class="win-btns">
+      <button id="btn-dash" class="btn tiny">📊 Progress</button>
+      <button id="btn-settings-done" class="btn btn-primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BREAK OVERLAY ============ -->
+<div id="break-overlay" class="overlay hide">
+  <div class="break-card">
+    <h2>Let&rsquo;s take a break!</h2>
+    <div class="mascot-home small"><svg class="fox-img"><use href="#fox"/></svg></div>
+    <p>Stretch, drink some water &amp; rest your eyes. Back in&nbsp;<span id="break-count">15</span>s</p>
+    <button id="btn-break-now" class="btn btn-primary">I&rsquo;m ready!</button>
+  </div>
+</div>
+
+<!-- feedback mascot layer (floating during levels) -->
+<div id="mascot-layer" class="hide">
+  <svg class="fox-img"><use href="#fox"/></svg>
+  <div class="bubble" id="mascot-bubble"></div>
+</div>
+
+<div id="confetti-layer" aria-hidden="true"></div>
+
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/trace.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/game.js"></script>
+<script>
+// PWA install + offline
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(r => console.log('SW registered', r.scope)).catch(e => console.log('SW failed', e));
+  });
+}
+let deferredPrompt = null;
+const installBtn = document.getElementById('btn-install');
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) installBtn.style.display = 'inline-flex';
+});
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('install', outcome);
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+}
+window.addEventListener('appinstalled', () => { if (installBtn) installBtn.style.display = 'none'; console.log('App installed'); });
+</script>
+</body>
+</html>
