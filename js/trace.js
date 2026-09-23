@@ -38,7 +38,7 @@ const Trace = (function(){
     box = document.createElement('div');
     box.className = 'trace-box';
     box.style.cssText = 'position:relative;width:100%;max-width:560px;margin:0 auto;aspect-ratio:560/420;background:#fff;border-radius:22px;box-shadow:0 10px 24px rgba(31,64,120,.12), inset 0 1px 0 #fff; overflow:hidden; border:1.5px solid rgba(255,255,255,.9);';
-    if (!CSS.supports('aspect-ratio','1 / 1')){
+    if (typeof CSS === 'undefined' || !CSS.supports('aspect-ratio','1 / 1')){
       box.style.height = '0';
       box.style.paddingBottom = (H/W*100) + '%';
     }
