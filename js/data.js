@@ -33,6 +33,21 @@ const LETTER_DATA = {
 
 const LETTER_INFO = LETTERS.map(l => ({letter:l, ...LETTER_DATA[l]}));
 
+const NUMBERS = '0123456789'.split('');
+const NUMBER_DATA = {
+  '0':{word:'Zero',  emoji:'0️⃣', hindi:'शून्य'},
+  '1':{word:'One',   emoji:'1️⃣', hindi:'एक'},
+  '2':{word:'Two',   emoji:'2️⃣', hindi:'दो'},
+  '3':{word:'Three', emoji:'3️⃣', hindi:'तीन'},
+  '4':{word:'Four',  emoji:'4️⃣', hindi:'चार'},
+  '5':{word:'Five',  emoji:'5️⃣', hindi:'पाँच'},
+  '6':{word:'Six',   emoji:'6️⃣', hindi:'छह'},
+  '7':{word:'Seven', emoji:'7️⃣', hindi:'सात'},
+  '8':{word:'Eight', emoji:'8️⃣', hindi:'आठ'},
+  '9':{word:'Nine',  emoji:'9️⃣', hindi:'नौ'}
+};
+const COUNT_EMOJIS = ['🍎','⭐','🐶','🎈','🍦','🚗','🍇','🐱'];
+
 /* Simple words for Level 5 (Word Building) */
 const WORD_POOL = [
   {word:'CAT', emoji:'🐱'},
@@ -63,7 +78,7 @@ const SPELL_POOL = [
   {word:'HEART',emoji:'❤️'}
 ];
 
-/* -------------------- Level names / icons (12 levels — Type first, Trace kept as #2, Turbo last) -------------------- */
+/* -------------------- Level names / icons (14 levels — Type first, Trace kept as #2, Turbo + Numbers) -------------------- */
 const LEVELS_META = [
   {name:'Type & Learn',  icon:'⌨️', color:'#FF6B6B'},
   {name:'Trace & Write', icon:'✏️', color:'#ff7e6b'},
@@ -76,7 +91,9 @@ const LEVELS_META = [
   {name:'Memory Flip',   icon:'🎴', color:'#7fb2ff'},
   {name:'Sort the Line', icon:'↕️', color:'#7ed957'},
   {name:'Spell Star',    icon:'✨', color:'#b983ff'},
-  {name:'Turbo Type',    icon:'⚡', color:'#00D1FF'}
+  {name:'Turbo Type',    icon:'⚡', color:'#00D1FF'},
+  {name:'Number Trace',  icon:'🔢', color:'#FF9F1C'},
+  {name:'Count with Zippy', icon:'🧮', color:'#4ECDC4'}
 ];
 
 const BADGES = [
@@ -92,6 +109,8 @@ const BADGES = [
   {id:10,icon:'↕️', name:'Sorting Pro'},
   {id:11,icon:'✨', name:'Spell Star'},
   {id:12,icon:'⚡', name:'Turbo Typer'},
+  {id:13,icon:'🔢', name:'Number Ninja'},
+  {id:14,icon:'🧮', name:'Counting Star'},
   {id:'all', icon:'🏅', name:'Adventure Star'},
   {id:'stars', icon:'⭐', name:'Shiny Champion'}
 ];
@@ -135,6 +154,10 @@ const I18N = {
     sortHint:'Drag to arrange A → Z',
     spellTitle:'Spell the word!',
     spellHint:'Arrange the letters',
+    numberTrace:'Trace the number!',
+    numberTip:'Use finger to draw',
+    countTitle:'How many?',
+    countHint:'Tap the correct number',
     praises:['Great job!','Awesome!','Wonderful!','Super!','You\u2019re a star!','Fantastic!','Keep it up!','So smart!'],
     tryAgain:'Try again, you\u2019re close!',
     levelWon:'Level Won!',
@@ -186,6 +209,10 @@ const I18N = {
     sortHint:'A से Z तक खींचो',
     spellTitle:'शब्द बनाओ!',
     spellHint:'अक्षर सजाओ',
+    numberTrace:'नंबर पर लिखो!',
+    numberTip:'उंगली से लिखो',
+    countTitle:'कितने हैं?',
+    countHint:'सही संख्या चुनो',
     praises:['शाबाश!','बहुत अच्छे!','शानदार!','सुपर!','तुम तारा हो!','बहुत बढ़िया!','जारी रखो!','कितने स्मार्ट हो!'],
     tryAgain:'फिर कोशिश करो, तुम पास ही हो!',
     levelWon:'लेवल जीत गए!',

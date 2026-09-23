@@ -65,6 +65,14 @@ const Levels = (function(){
       if (shuffled.join('') === target.join('')) return makeQ('spell');
       return { type:'spell', word:w.word, emoji:w.emoji, target, shuffled };
     }
+    if (t === 'count'){
+      const count = 2 + Math.floor(Math.random()*7); // 2-8 for nice display
+      const emoji = COUNT_EMOJIS[Math.floor(Math.random()*COUNT_EMOJIS.length)];
+      const answer = String(count);
+      const pool = NUMBERS.filter(n=>n!=='0');
+      const distract = pickRand(pool, 3, answer);
+      return { type:'count', count, emoji, answer, options: shuffle([answer].concat(distract)) };
+    }
   }
 
   function buildQuestions(n){
@@ -76,9 +84,10 @@ const Levels = (function(){
       7:{types:['reco','listen','missing','word'], count:10},
       8:{types:['case'], count:8},
       10:{types:['sort'], count:6},
-      11:{types:['spell'], count:6}
+      11:{types:['spell'], count:6},
+      14:{types:['count'], count:8}
     };
-    if (n === 1 || n === 2 || n === 9) return []; // keyboard, trace, memory are single boards
+    if (n === 1 || n === 2 || n === 9 || n === 13) return []; // keyboard, trace, memory, number trace are single boards
     const cfg = map[n];
     if (!cfg) return [];
     const list = [];
@@ -208,6 +217,16 @@ const Levels = (function(){
       cardEl.innerHTML = html;
       window.Game.hideMascot();
       FX.speak(tt('spellTitle')+' '+q.word, UI_LANG === 'hi' ? 'hi' : 'en');
+    } else if (q.type === 'count'){
+      const emojis = Array(q.count).fill(q.emoji).join(' ');
+      html += '<div class="intro-card"><div class="ic" style="background:linear-gradient(180deg,#4ECDC4,#2ec4b6)">🧮</div><div><b>'+tt('countTitle')+'</b><p>'+tt('countHint')+'</p></div></div>';
+      html += '<div class="big-pic" style="font-size:42px; line-height:1.4; max-width:300px; word-spacing:8px;">' + emojis + '</div>';
+      html += '<div class="action-line" style="font-size:16px;">'+q.count+' '+q.emoji+' — '+tt('countHint')+'</div>';
+      html += '<div class="option-row">' + q.options.map(o => '<button class="opt" data-a="'+o+'" style="font-size:32px">'+o+'</button>').join('') + '</div>';
+      cardEl.innerHTML = html;
+      cardEl.querySelectorAll('.opt').forEach(b => b.onclick = () => pickLetter(q, b));
+      window.Game.hideMascot();
+      FX.speak(q.count + ' ' + q.emoji, UI_LANG === 'hi' ? 'hi' : 'en');
     }
     if (levelNum === 7) startTimer();
   }
@@ -786,6 +805,37 @@ const Levels = (function(){
         onCelebrate: (x,y) => window.Game.burst(x,y,['#ffdd55','#ff7e6b','#5fd4a8','#8f7cf0'])
       });
       body().style.alignItems = 'stretch';
+      return;
+    }
+
+    if (n === 13){
+      // Number Trace 0-9 (manual Next as in Trace)
+      const dots = document.createElement('div');
+      dots.className = 'progress-dots';
+      dots.id = 'dots';
+      let h=''; for(let i=0;i<10;i++) h += '<div class="dot"></div>';
+      dots.innerHTML = h;
+      dots.firstChild && dots.firstChild.classList.add('active');
+      body().appendChild(dots);
+      const c = document.createElement('div');
+      c.className = 'q-card';
+      c.id = 'q-card';
+      body().appendChild(c);
+      body().style.alignItems = 'stretch';
+      body().style.justifyContent = 'center';
+      Trace.init({
+        body: body(),
+        charset: NUMBERS,
+        hint: !!(opts && opts.hint),
+        onLetterDone: (idx) => {
+          document.querySelectorAll('.dot').forEach((d,i)=>{
+            d.classList.toggle('done', i < idx+1);
+            d.classList.toggle('active', i === idx+1);
+          });
+        },
+        onDone: () => window.Game.finishLevel(13, { correct: 10, total: 10, pct: 1 }),
+        onCelebrate: (x,y) => window.Game.burst(x,y,['#FF9F1C','#FFD93D','#4ECDC4'])
+      });
       return;
     }
 

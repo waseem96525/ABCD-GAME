@@ -12,9 +12,11 @@ const Trace = (function(){
   let last = {x:0,y:0}, brushIdx = 0, lastCheck = 0;
   let opts = {};
   let nextBtn = null, progFill = null, progText = null, progWrap = null;
+  let charset = LETTERS;
 
   function fontPx(){ return '900 320px "Comic Sans MS","Segoe UI",cursive,sans-serif'; }
-  function letter(){ return LETTERS[index]; }
+  function letter(){ return charset[index]; }
+  function isNum(){ return charset === NUMBERS; }
 
   function tagRow(){
     const row = document.createElement('div');
@@ -26,7 +28,9 @@ const Trace = (function(){
   function updateTag(){
     const el = document.getElementById('trace-tag');
     if (!el) return;
-    el.querySelector('span').textContent = tt('traceMe') + '  ' + (index + 1) + ' / 26  •  ' + letter();
+    const total = charset.length;
+    const label = isNum() ? tt('numberTrace') : tt('traceMe');
+    el.querySelector('span').textContent = label + '  ' + (index + 1) + ' / ' + total + '  •  ' + letter();
     el.querySelector('i').textContent = letter();
   }
 
@@ -59,7 +63,7 @@ const Trace = (function(){
     progText = document.getElementById('trace-prog-text');
 
     requestAnimationFrame(() => {
-      if (index < LETTERS.length) buildLetter(LETTERS[index]);
+      if (index < charset.length) buildLetter(charset[index]);
     });
 
     paintCv.addEventListener('pointerdown', onDown, {passive:false});
@@ -310,11 +314,11 @@ const Trace = (function(){
     setTimeout(() => {
       cooling = false;
       index++;
-      if (index >= LETTERS.length){
+      if (index >= charset.length){
         fin = true;
         if (opts.onDone) opts.onDone();
       } else {
-        buildLetter(LETTERS[index]);
+        buildLetter(charset[index]);
         brushIdx++;
         setTimeout(sayLetter, 300);
       }
@@ -322,12 +326,19 @@ const Trace = (function(){
   }
 
   function sayLetter(){
-    const info = LETTER_DATA[letter()];
-    if (!info) return;
-    if (UI_LANG === 'hi'){
-      FX.speak(letter() + '. ' + letter() + ' for ' + info.hindi, 'hi');
+    if (isNum()){
+      const info = NUMBER_DATA[letter()];
+      if (!info) return;
+      if (UI_LANG === 'hi') FX.speak(letter() + ' ' + info.hindi, 'hi');
+      else FX.speak(letter() + ' for ' + info.word, 'en');
     } else {
-      FX.speak(letter() + '. ' + letter() + ' for ' + info.word, 'en');
+      const info = LETTER_DATA[letter()];
+      if (!info) return;
+      if (UI_LANG === 'hi'){
+        FX.speak(letter() + '. ' + letter() + ' for ' + info.hindi, 'hi');
+      } else {
+        FX.speak(letter() + '. ' + letter() + ' for ' + info.word, 'en');
+      }
     }
   }
   function forceSay(t){
@@ -368,7 +379,8 @@ const Trace = (function(){
   }
 
   function init(options){
-    opts = Object.assign({ onLetterDone:null, onDone:null, onCelebrate:null, hint:false }, options);
+    opts = Object.assign({ onLetterDone:null, onDone:null, onCelebrate:null, hint:false, charset:LETTERS }, options);
+    charset = opts.charset || LETTERS;
     index = 0; cooling = false; fin = false; brushIdx = 0; lastCheck = 0;
     const body = opts.body;
     body.innerHTML = '';
@@ -376,14 +388,14 @@ const Trace = (function(){
     wrapper.className = 'trace-stage';
     const tip = document.createElement('div');
     tip.className = 'sub-tip';
-    tip.textContent = tt('traceTip');
+    tip.textContent = isNum() ? tt('numberTip') : tt('traceTip');
     wrapper.appendChild(tip);
     const tag = tagRow();
     wrapper.appendChild(tag);
     body.appendChild(wrapper);
     buildCanvas();
     buildControls();
-    buildLetter(LETTERS[0]);
+    buildLetter(charset[0]);
     setTimeout(sayLetter, 400);
     updateProgress(0);
     return { done: () => fin };
