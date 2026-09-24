@@ -49,6 +49,101 @@ window.Game = (function(){
   }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
+  /* ---------------- secret unlock (hidden for owner) ---------------- */
+  const _S_B64 = "V0FTRUVNOTY1MjU="; // -> WASEEM96525
+  const _S2_B64 = "WlVOQUlTSEE3ODY="; // -> ZUNAISHA786
+  function _dec(b){ try{ return atob(b); }catch(_){ return b; } }
+  function unlockAllSilent(){
+    if(!S) load();
+    S.unlocked = 17;
+    save();
+    try{ renderMap(); }catch(_){}
+    try{ updateHomeStats(); }catch(_){}
+  }
+  function trySecret(code){
+    if(!code) return false;
+    const c = String(code).trim().toLowerCase();
+    const s1 = _dec(_S_B64).toLowerCase();
+    const s2 = _dec(_S2_B64).toLowerCase();
+    if(c === s1 || c === s2){
+      unlockAllSilent();
+      try{ FX.correct && FX.correct(); }catch(_){}
+      burst(window.innerWidth/2, window.innerHeight*0.35);
+      showMascot("All levels unlocked! \uD83D\uDD13 17/17", {hold: 3000, speak:false});
+      setTimeout(()=> showScreen('map'), 700);
+      return true;
+    }
+    return false;
+  }
+  function ensureSecretOverlay(){
+    if($id('secret-overlay')) return $id('secret-overlay');
+    const ov = document.createElement('div');
+    ov.id = 'secret-overlay';
+    ov.className = 'overlay hide';
+    ov.innerHTML = '<div class="gate-card" style="max-width:360px">'
+      + '<div style="font-weight:900; font-size:18px; margin-bottom:6px">\uD83D\uDD13 Secret Unlock</div>'
+      + '<div style="font-size:13px; font-weight:700; color:var(--ink-2); margin-bottom:10px">Enter owner code to unlock all 17 levels</div>'
+      + '<input id="secret-input" placeholder="Enter secret code" autocomplete="off" spellcheck="false" style="width:100%; padding:12px 14px; border-radius:14px; border:1.5px solid #dfe8f5; font-size:16px; font-weight:800; text-align:center; letter-spacing:.5px; outline:none;">'
+      + '<div id="secret-msg" style="min-height:18px; font-size:12px; font-weight:800; margin-top:8px; color:var(--coral-deep)"></div>'
+      + '<div style="display:flex; gap:8px; justify-content:center; margin-top:10px"><button id="secret-ok" class="btn btn-primary tiny">Unlock</button><button id="secret-cancel" class="btn tiny">Cancel</button></div>'
+      + '</div>';
+    document.body.appendChild(ov);
+    $id('secret-cancel').onclick = ()=> ov.classList.add('hide');
+    ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.add('hide'); });
+    const doTry = ()=>{
+      const v = $id('secret-input').value;
+      if(trySecret(v)){
+        $id('secret-msg').style.color = '#0e9a7a';
+        $id('secret-msg').textContent = '\u2713 Unlocked! Opening map...';
+        setTimeout(()=> ov.classList.add('hide'), 900);
+      } else {
+        $id('secret-msg').style.color = 'var(--coral-deep)';
+        $id('secret-msg').textContent = 'Wrong code. Try again.';
+        try{ FX.wrong && FX.wrong(); }catch(_){}
+      }
+    };
+    $id('secret-ok').onclick = doTry;
+    $id('secret-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doTry(); if(e.key==='Escape') ov.classList.add('hide'); });
+    return ov;
+  }
+  function showSecretPrompt(){
+    const ov = ensureSecretOverlay();
+    ov.classList.remove('hide');
+    const inp = $id('secret-input');
+    const msg = $id('secret-msg');
+    if(inp) { inp.value=''; inp.focus(); }
+    if(msg) msg.textContent='';
+  }
+  function initSecretTriggers(){
+    // 1) Tap logo 5 times quickly
+    let taps=0, tmr=null;
+    const logo = document.querySelector('.logo');
+    if(logo){
+      logo.style.cursor='pointer';
+      logo.title='Tap 5x for owner unlock';
+      logo.addEventListener('click', ()=>{
+        taps++;
+        clearTimeout(tmr);
+        tmr = setTimeout(()=> taps=0, 2000);
+        if(taps>=5){ taps=0; showSecretPrompt(); }
+      });
+    }
+    // 2) Keyboard: Ctrl+Shift+U or type secret quickly
+    let buf='';
+    window.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='u'){ e.preventDefault(); showSecretPrompt(); return; }
+      if(e.key.length===1 && !e.ctrlKey && !e.metaKey){
+        buf = (buf + e.key.toLowerCase()).slice(-24);
+        const s1 = _dec(_S_B64).toLowerCase();
+        const s2 = _dec(_S2_B64).toLowerCase();
+        if(buf.includes(s1) || buf.includes(s2)){ buf=''; trySecret(s1); }
+      }
+    });
+    // 3) Console / manual: window.unlockABC("code")
+    window.unlockABC = trySecret;
+    window.showSecretUnlock = showSecretPrompt;
+  }
+
   /* ---------------- streak & coins ---------------- */
   function todayStr(){ return new Date().toISOString().slice(0,10); }
   function updateStreak(){
@@ -792,6 +887,7 @@ window.Game = (function(){
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('touchstart', unlock);
 
+    try{ initSecretTriggers(); }catch(_){}
     showScreen('home');
   }
 
