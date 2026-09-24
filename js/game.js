@@ -627,63 +627,280 @@ window.Game = (function(){
     updateHomeStats();
   }
 
-  /* ---------------- draw pad ---------------- */
+  /* ---------------- draw pad — enhanced ---------------- */
   let drawCtx = null, drawColor = '#FF6B6B', drawSize = 12, drawEraser = false, drawPainting = false, drawLast = null;
-  const DRAW_COLORS = ['#FF6B6B','#ffb62e','#6BCB77','#4D96FF','#9D65C9','#FF6B9D','#3a2d5e','#000000'];
+  let drawTool = 'brush', drawBg = '#fff', drawHistory = [], drawRedo = [], drawRainbowHue = 0, drawStamp = null;
+  const DRAW_COLORS = ['#FF6B6B','#FF8F3A','#FFD93D','#6BCB77','#4ECDC4','#4D96FF','#9D65C9','#FF6B9D','#3a2d5e','#000000','#FFFFFF','#FF9EB0','#A7E8D0','#C7B6FF'];
+  const DRAW_STAMPS = ['🍎','🍦','⭐','🎈','🐶','🐱','🦁','🚗','⚽','🌈','❤️','🦊','🐸','🍇','🚀','🎀'];
+  function pushHistory(){
+    const cv=$id('draw-canvas');
+    if(!cv||!drawCtx) return;
+    try{
+      drawHistory.push(cv.toDataURL());
+      if(drawHistory.length>22) drawHistory.shift();
+      drawRedo = [];
+    }catch(_){}
+  }
+  function restoreFromDataUrl(url){
+    const cv=$id('draw-canvas');
+    if(!cv||!drawCtx) return;
+    const img=new Image();
+    img.onload=()=>{ drawCtx.clearRect(0,0,cv.width,cv.height); drawCtx.drawImage(img,0,0); };
+    img.src=url;
+  }
+  function undoDraw(){
+    if(drawHistory.length===0) { FX.wrong&&FX.wrong(); return; }
+    const cv=$id('draw-canvas');
+    try{ drawRedo.push(cv.toDataURL()); }catch(_){}
+    const prev=drawHistory.pop();
+    restoreFromDataUrl(prev);
+    FX.click&&FX.click();
+  }
+  function redoDraw(){
+    if(drawRedo.length===0) { FX.wrong&&FX.wrong(); return; }
+    const cv=$id('draw-canvas');
+    try{ drawHistory.push(cv.toDataURL()); }catch(_){}
+    const nxt=drawRedo.pop();
+    restoreFromDataUrl(nxt);
+    FX.click&&FX.click();
+  }
+  function redrawBackground(color){
+    const cv=$id('draw-canvas');
+    if(!cv||!drawCtx) return;
+    drawBg=color;
+    // base fill
+    if(color==='grid' || color==='dotted' || color==='lined'){
+      drawCtx.fillStyle='#fff'; drawCtx.fillRect(0,0,cv.width,cv.height);
+      drawCtx.strokeStyle='#e6ecf5'; drawCtx.lineWidth=1;
+      if(color==='grid'){
+        const step=28;
+        for(let x=0;x<cv.width;x+=step){ drawCtx.beginPath(); drawCtx.moveTo(x,0); drawCtx.lineTo(x,cv.height); drawCtx.stroke(); }
+        for(let y=0;y<cv.height;y+=step){ drawCtx.beginPath(); drawCtx.moveTo(0,y); drawCtx.lineTo(cv.width,y); drawCtx.stroke(); }
+      } else if(color==='dotted'){
+        drawCtx.fillStyle='#d6e2f0';
+        const step=22;
+        for(let y=step;y<cv.height;y+=step) for(let x=step;x<cv.width;x+=step){ drawCtx.beginPath(); drawCtx.arc(x,y,1.6,0,Math.PI*2); drawCtx.fill(); }
+      } else if(color==='lined'){
+        drawCtx.strokeStyle='#ffd2d2';
+        const step=24;
+        for(let y=step;y<cv.height;y+=step){ drawCtx.beginPath(); drawCtx.moveTo(0,y); drawCtx.lineTo(cv.width,y); drawCtx.stroke(); }
+        // margin line
+        drawCtx.strokeStyle='#9edcf7'; drawCtx.lineWidth=1.5; drawCtx.beginPath(); drawCtx.moveTo(44,0); drawCtx.lineTo(44,cv.height); drawCtx.stroke();
+      }
+    } else {
+      drawCtx.fillStyle=color; drawCtx.fillRect(0,0,cv.width,cv.height);
+    }
+    pushHistory();
+  }
+  function setDrawTool(t){
+    drawTool=t;
+    drawEraser=(t==='eraser');
+    ['btn-brush','btn-neon','btn-rainbow','btn-eraser'].forEach(id=>{
+      const b=$id(id); if(!b) return; b.classList.remove('active'); b.style.outline='';
+    });
+    const map={brush:'btn-brush',neon:'btn-neon',rainbow:'btn-rainbow',eraser:'btn-eraser'};
+    const active=map[t]; if(active && $id(active)) $id(active).classList.add('active');
+    drawStamp=null;
+    const cv=$id('draw-canvas'); if(cv) cv.style.cursor = (t==='eraser' ? 'cell' : 'crosshair');
+  }
+  function placeStamp(emoji, pos){
+    if(!drawCtx) return;
+    pushHistory();
+    drawCtx.save();
+    drawCtx.font = (Math.max(24, drawSize*2.2))+'px serif';
+    drawCtx.textAlign='center'; drawCtx.textBaseline='middle';
+    drawCtx.fillText(emoji, pos.x, pos.y);
+    drawCtx.restore();
+  }
   function initDraw(){
     const cv = $id('draw-canvas');
     if (!cv) return;
     drawCtx = cv.getContext('2d');
     drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round';
-    // white bg
-    drawCtx.fillStyle = '#fff'; drawCtx.fillRect(0,0,cv.width,cv.height);
-    // colors
+    // init bg if empty
     const pal = $id('draw-colors');
     if (pal && pal.children.length === 0){
       DRAW_COLORS.forEach(c=>{
         const b = document.createElement('button');
-        b.style.cssText = 'width:32px;height:32px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.9);cursor:pointer;';
+        b.style.cssText = 'width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.9);cursor:pointer;'+(c==='#FFFFFF'?'box-shadow:0 2px 6px rgba(0,0,0,.12), inset 0 0 0 1px #dfe8f5;':'');
         b.style.background = c;
         if (c === drawColor) b.style.outline = '3px solid #ffd35c';
-        b.onclick = () => { drawColor=c; drawEraser=false; $id('btn-eraser').style.outline=''; [...pal.children].forEach(x=>x.style.outline = x.style.background===c?'3px solid #ffd35c':''); };
+        b.title=c;
+        b.onclick = () => {
+          drawColor=c;
+          const custom=$id('draw-custom'); if(custom) custom.value=c;
+          setDrawTool('brush');
+          [...pal.children].forEach(x=>x.style.outline = x.style.background===c?'3px solid #ffd35c':'');
+        };
         pal.appendChild(b);
+      });
+    }
+    // custom color
+    const custom=$id('draw-custom');
+    if(custom && !custom._bound){
+      custom._bound=true;
+      custom.addEventListener('input', (e)=>{
+        drawColor=e.target.value;
+        setDrawTool('brush');
+        [...($id('draw-colors').children)].forEach(x=>x.style.outline='');
       });
     }
     // sizes
     document.querySelectorAll('#draw-sizes [data-size]').forEach(b=>{
+      if(b._bound) return; b._bound=true;
       b.onclick = () => {
         document.querySelectorAll('#draw-sizes [data-size]').forEach(x=>x.classList.remove('active'));
         b.classList.add('active');
         drawSize = parseInt(b.dataset.size);
-        drawEraser = false;
-        $id('btn-eraser').style.outline = '';
+        setDrawTool(drawTool==='eraser' ? 'brush' : drawTool);
       };
     });
-    const eraserBtn = $id('btn-eraser');
-    if (eraserBtn) eraserBtn.onclick = () => {
-      drawEraser = !drawEraser;
-      eraserBtn.style.outline = drawEraser ? '3px solid #ffd35c' : '';
-      eraserBtn.style.background = drawEraser ? '#fff6cc' : '';
+    // tools
+    const bindTool=(id, tool)=>{
+      const el=$id(id); if(!el || el._bound) return; el._bound=true;
+      el.onclick=()=>{ setDrawTool(tool); if(tool==='rainbow') drawRainbowHue=Math.random()*360; FX.click&&FX.click(); };
     };
+    bindTool('btn-brush','brush');
+    bindTool('btn-neon','neon');
+    bindTool('btn-rainbow','rainbow');
+    bindTool('btn-eraser','eraser');
+    // fill
+    const fillBtn=$id('btn-fill');
+    if(fillBtn && !fillBtn._bound){ fillBtn._bound=true; fillBtn.onclick=()=>{
+      redrawBackground(drawColor);
+      FX.pop&&FX.pop();
+    };}
+    // bg selector
+    const bgSel=$id('draw-bg');
+    if(bgSel && !bgSel._bound){ bgSel._bound=true; bgSel.onchange=(e)=>{ redrawBackground(e.target.value); } }
+    // undo/redo
+    const uBtn=$id('btn-undo'); if(uBtn && !uBtn._bound){ uBtn._bound=true; uBtn.onclick=undoDraw; }
+    const rBtn=$id('btn-redo'); if(rBtn && !rBtn._bound){ rBtn._bound=true; rBtn.onclick=redoDraw; }
+    // stamps panel
+    const stampsWrap=$id('draw-stamps');
+    if(stampsWrap && stampsWrap.children.length===0){
+      DRAW_STAMPS.forEach(em=>{
+        const b=document.createElement('button');
+        b.textContent=em;
+        b.style.cssText='width:38px;height:38px;border-radius:12px;border:1.5px solid #fff;background:linear-gradient(180deg,#fff,#eef6ff);font-size:20px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.08);';
+        b.onclick=()=>{
+          drawStamp=em; setDrawTool('brush');
+          // highlight
+          [...stampsWrap.children].forEach(x=>x.style.outline='');
+          b.style.outline='3px solid #ffd35c';
+          FX.pop&&FX.pop();
+        };
+        stampsWrap.appendChild(b);
+      });
+    }
+    const stampsToggle=$id('btn-stamps-toggle');
+    if(stampsToggle && !stampsToggle._bound){ stampsToggle._bound=true; stampsToggle.onclick=()=>{
+      const p=$id('draw-stamps'); const l=$id('draw-letters'); if(l) l.classList.add('hide');
+      p.classList.toggle('hide'); p.style.display = p.classList.contains('hide') ? 'none' : 'flex';
+    };}
+    // letters trace panel
+    const lettersWrap=$id('draw-letters');
+    if(lettersWrap && lettersWrap.children.length===0){
+      LETTERS.forEach(l=>{
+        const b=document.createElement('button');
+        b.textContent=l;
+        b.style.cssText='width:34px;height:34px;border-radius:10px;border:1.5px solid #fff;background:linear-gradient(180deg,#fff,#eef6ff);font-weight:900;color:var(--ink);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.08);';
+        b.onclick=()=>{
+          // draw faint letter as guide
+          pushHistory();
+          const cv=$id('draw-canvas');
+          drawCtx.save();
+          drawCtx.globalAlpha=0.12;
+          drawCtx.fillStyle='#6b5a8a';
+          drawCtx.font='bold '+(cv.width*0.62)+'px Comic Sans MS, cursive';
+          drawCtx.textAlign='center'; drawCtx.textBaseline='middle';
+          drawCtx.fillText(l, cv.width/2, cv.height/2);
+          drawCtx.restore();
+          FX.pop&&FX.pop();
+        };
+        lettersWrap.appendChild(b);
+      });
+      // add numbers
+      NUMBERS.forEach(n=>{
+        const b=document.createElement('button');
+        b.textContent=n;
+        b.style.cssText='width:34px;height:34px;border-radius:10px;border:1.5px solid #fff;background:linear-gradient(180deg,#fff7d6,#ffec99);font-weight:900;color:var(--ink);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.08);';
+        b.onclick=()=>{
+          pushHistory();
+          const cv=$id('draw-canvas');
+          drawCtx.save();
+          drawCtx.globalAlpha=0.12;
+          drawCtx.fillStyle='#6b5a8a';
+          drawCtx.font='bold '+(cv.width*0.62)+'px Comic Sans MS, cursive';
+          drawCtx.textAlign='center'; drawCtx.textBaseline='middle';
+          drawCtx.fillText(n, cv.width/2, cv.height/2);
+          drawCtx.restore();
+          FX.pop&&FX.pop();
+        };
+        lettersWrap.appendChild(b);
+      });
+    }
+    const lettersToggle=$id('btn-letters-toggle');
+    if(lettersToggle && !lettersToggle._bound){ lettersToggle._bound=true; lettersToggle.onclick=()=>{
+      const p=$id('draw-letters'); const s=$id('draw-stamps'); if(s){ s.classList.add('hide'); s.style.display='none'; }
+      p.classList.toggle('hide'); p.style.display = p.classList.contains('hide') ? 'none' : 'flex';
+    };}
+    // init state once
+    if(!cv._drawBound){
+      cv._drawBound=true;
+      redrawBackground(drawBg);
+      drawHistory=[]; drawRedo=[];
+      pushHistory();
+    }
     // events
-    const wrap = $id('draw-wrap');
     const getPos = (e) => {
       const r = cv.getBoundingClientRect();
       const sx = cv.width / r.width;
       const sy = cv.height / r.height;
       return {x:(e.clientX - r.left)*sx, y:(e.clientY - r.top)*sy};
     };
-    const start = (e) => { e.preventDefault(); drawPainting=true; drawLast=getPos(e); try{ cv.setPointerCapture(e.pointerId);}catch(_){} };
+    // remove old listeners if any by cloning? we use flag to avoid duplicate
+    if(cv._hasDrawListeners) return;
+    cv._hasDrawListeners=true;
+    const start = (e) => {
+      e.preventDefault();
+      const p=getPos(e);
+      // stamp mode: if stamp selected and not eraser/neon/rainbow special, place stamp on tap
+      if(drawStamp){
+        placeStamp(drawStamp, p);
+        return;
+      }
+      pushHistory();
+      drawPainting=true; drawLast=p;
+      drawCtx.beginPath(); drawCtx.moveTo(p.x,p.y);
+      try{ cv.setPointerCapture(e.pointerId);}catch(_){}
+    };
     const move = (e) => {
       if (!drawPainting) return;
       e.preventDefault();
       const p = getPos(e);
-      drawCtx.strokeStyle = drawEraser ? '#fff' : drawColor;
+      if(drawTool==='rainbow'){
+        drawRainbowHue=(drawRainbowHue+6)%360;
+        drawCtx.strokeStyle='hsl('+drawRainbowHue+',100%,50%)';
+        drawCtx.shadowBlur=0;
+      } else if(drawTool==='neon'){
+        drawCtx.strokeStyle=drawColor;
+        drawCtx.shadowBlur=14; drawCtx.shadowColor=drawColor;
+      } else {
+        drawCtx.strokeStyle = drawEraser ? (drawBg==='grid'||drawBg==='dotted'||drawBg==='lined' ? '#fff' : drawBg==='blackboard' ? '#1a2a3a' : '#fff') : drawColor;
+        if(drawTool==='eraser') drawCtx.shadowBlur=0; else drawCtx.shadowBlur=0;
+        // for white stroke on white bg, ensure visible: if drawColor #FFFFFF and bg #fff, keep as is
+      }
       drawCtx.lineWidth = drawSize;
       drawCtx.beginPath(); drawCtx.moveTo(drawLast.x, drawLast.y); drawCtx.lineTo(p.x,p.y); drawCtx.stroke();
       drawLast = p;
     };
-    const end = (e) => { drawPainting=false; try{ cv.releasePointerCapture(e.pointerId);}catch(_){} };
+    const end = (e) => {
+      if(drawPainting){
+        drawCtx.shadowBlur=0;
+      }
+      drawPainting=false; try{ cv.releasePointerCapture(e.pointerId);}catch(_){}
+    };
     cv.addEventListener('pointerdown', start, {passive:false});
     cv.addEventListener('pointermove', move, {passive:false});
     cv.addEventListener('pointerup', end);
@@ -693,7 +910,7 @@ window.Game = (function(){
   function clearDraw(){
     const cv=$id('draw-canvas');
     if (!cv||!drawCtx) return;
-    drawCtx.fillStyle='#fff'; drawCtx.fillRect(0,0,cv.width,cv.height);
+    redrawBackground(drawBg);
     FX.click();
   }
   function saveDraw(){
