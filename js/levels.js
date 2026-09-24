@@ -476,7 +476,7 @@ const Levels = (function(){
       chip.addEventListener('pointerdown', e => {
         if (busy) return;
         e.preventDefault();
-        startDrag(chip, e);
+        startDrag(chip, e, q);
       });
     });
     if (slot) slot.addEventListener('click', () => placeChip(q));
@@ -497,12 +497,15 @@ const Levels = (function(){
     }
   }
 
-  function startDrag(chip, e){
+  function startDrag(chip, e, q){
     const r = chip.getBoundingClientRect();
     const offX = e.clientX - r.left, offY = e.clientY - r.top;
     chip.classList.add('dragging');
+    try{ chip.setPointerCapture(e.pointerId); }catch(_){}
+    let dragged = false;
     const slot = card().querySelector('#m-slot');
     const move = ev => {
+      dragged = true;
       chip.style.left = (ev.clientX - offX) + 'px';
       chip.style.top = (ev.clientY - offY) + 'px';
       if (slot){
@@ -513,11 +516,21 @@ const Levels = (function(){
     const up = ev => {
       document.removeEventListener('pointermove', move);
       document.removeEventListener('pointerup', up);
+      try{ chip.releasePointerCapture(e.pointerId); }catch(_){}
       chip.style.left = ''; chip.style.top = '';
       chip.classList.remove('dragging');
       if (slot){ slot.classList.remove('dragover'); const sr = slot.getBoundingClientRect();
-        if (inRect(ev, sr)){ answerMissing(q, chip.dataset.l); return; } }
-      if (selChip === chip){ selChip = null; }
+        if (inRect(ev, sr)){
+          if (selChip){ selChip.classList.remove('hint'); selChip = null; }
+          answerMissing(q, chip.dataset.l); return;
+        } }
+      if (dragged){
+        // suppress the synthetic click that fires after a drag
+        const suppress = (ev2) => { ev2.stopPropagation(); ev2.preventDefault(); chip.removeEventListener('click', suppress, true); };
+        chip.addEventListener('click', suppress, true);
+        setTimeout(()=> chip.removeEventListener('click', suppress, true), 0);
+        if (selChip === chip){ selChip.classList.remove('hint'); selChip = null; }
+      }
     };
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
