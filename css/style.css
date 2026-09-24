@@ -113,8 +113,8 @@ body::before{
 }
 .logo span{color:var(--sun-deep); -webkit-text-fill-color:var(--sun-deep);}
 .logo::after{
-  content:"CHAMP"; display:block; font-size:11px; letter-spacing:4px; color:var(--grape-deep);
-  text-shadow:none; margin-top:2px; font-weight:800; opacity:.85;
+  content:"BY WASEEM AKRAM"; display:block; font-size:10px; letter-spacing:1.8px; color:var(--grape-deep);
+  text-shadow:none; margin-top:3px; font-weight:900; opacity:.9;
 }
 .gear{background:rgba(255,255,255,.92);}
 
