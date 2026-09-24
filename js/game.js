@@ -12,7 +12,6 @@ window.Game = (function(){
       stars: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0},
       unlocked: 1,
       plays: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0},
-      acc: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0},
       last: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0},
       bestCPM: {12:0},
       bestWPM: {12:0},
@@ -23,9 +22,10 @@ window.Game = (function(){
       lastDailyReward: null,
       shopOwned: [],
       shopEquipped: null,
+      avatar: { body:'#f6a53c', cheek:'#ff9f9f', hatColor:'#ffd35c' },
       seenStories: [],
       badges: [],
-      settings: { lang:'en', sfx:true, music:true, voice:true, breakOn:true, breakMin:15 }
+      settings: { lang:'en', sfx:true, music:true, voice:true, breakOn:true, breakMin:15, seasonAuto:true }
     };
   }
   function load(){
@@ -42,6 +42,9 @@ window.Game = (function(){
           if (o.last && o.last[k] == null) o.last[k]=0;
         }
         S = Object.assign(d, o, { settings: Object.assign(defaultState().settings, o.settings || {}) });
+        // avatar migration
+        if(!S.avatar) S.avatar = Object.assign({}, d.avatar);
+        else S.avatar = Object.assign({}, d.avatar, S.avatar);
         return;
       }
     } catch(e){}
@@ -142,6 +145,147 @@ window.Game = (function(){
     // 3) Console / manual: window.unlockABC("code")
     window.unlockABC = trySecret;
     window.showSecretUnlock = showSecretPrompt;
+  }
+
+  /* ---------------- Pet Evolution — Zippy grows with stars ---------------- */
+  const PET_STAGES = [
+    {name:'Baby Zippy', emoji:'🐣', min:0, max:7, scale:0.88, aura:''},
+    {name:'Little Zippy', emoji:'🎒', min:8, max:17, scale:0.97, aura:''},
+    {name:'Super Zippy', emoji:'🚀', min:18, max:30, scale:1.06, aura:'0 6px 18px rgba(255,211,92,.45)'},
+    {name:'Hero Zippy', emoji:'🦸', min:31, max:44, scale:1.13, aura:'0 8px 22px rgba(143,124,240,.45), 0 0 18px rgba(255,211,92,.35)'},
+    {name:'Champion Zippy', emoji:'👑', min:45, max:51, scale:1.20, aura:'0 10px 28px rgba(255,107,107,.35), 0 0 22px rgba(255,211,92,.55)'}
+  ];
+  function getPetStage(total){
+    for(let s of PET_STAGES) if(total>=s.min && total<=s.max) return s;
+    return PET_STAGES[PET_STAGES.length-1];
+  }
+  function petReact(type){
+    document.querySelectorAll('.fox-img').forEach(el=>{
+      el.classList.remove('react-correct','react-wrong');
+      void el.offsetWidth;
+      el.classList.add(type==='correct'?'react-correct':'react-wrong');
+      setTimeout(()=> el.classList.remove('react-correct','react-wrong'), 700);
+    });
+    // also bounce mascot layer fox
+    const ml=$id('mascot-layer');
+    if(ml && !ml.classList.contains('hide')){
+      ml.animate && ml.animate([{transform:'translateX(-50%) scale(1)'},{transform:'translateX(-50%) scale(1.08)'},{transform:'translateX(-50%) scale(1)'}],{duration:520, easing:'cubic-bezier(.2,1.5,.4,1)'});
+    }
+  }
+  function applyPetEvolution(){
+    const total = Object.values(S.stars||{}).reduce((a,b)=>a+b,0);
+    const st = getPetStage(total);
+    const next = PET_STAGES.find(s=>s.min>total) || st;
+    const pct = st.max===st.min ? 100 : Math.round((total - st.min) / Math.max(1, (next.max - next.min || st.max - st.min +1)) *100);
+    // scale all foxes
+    document.querySelectorAll('.mascot-home .fox-img, #mascot-layer .fox-img').forEach(el=>{
+      el.style.transform = 'scale('+st.scale+')';
+      el.style.filter = st.aura ? 'drop-shadow('+st.aura+') drop-shadow(0 12px 18px rgba(0,0,0,.18))' : 'drop-shadow(0 12px 18px rgba(0,0,0,.18))';
+      el.style.transition='transform .5s cubic-bezier(.2,1.4,.4,1), filter .4s';
+    });
+    // update badge on home
+    let badge=$id('evo-badge');
+    if(!badge){
+      const homeStage=document.querySelector('.home-stage');
+      if(homeStage){
+        badge=document.createElement('div');
+        badge.id='evo-badge';
+        badge.className='evo-badge';
+        homeStage.insertBefore(badge, homeStage.querySelector('.home-stats'));
+      }
+    }
+    if(badge){
+      const toNext = next.min - total;
+      const need = Math.max(0, toNext);
+      badge.innerHTML='<span class="evo-icon">'+st.emoji+'</span><span>'+st.name+' • '+total+'⭐</span><span class="evo-bar"><i style="width:'+Math.min(100, Math.round(total/51*100))+'%"></i></span>'+(total<51?'<span style="font-size:10px; opacity:.7;">'+need+'⭐ to '+next.name+'</span>':'<span style="font-size:10px;">MAX</span>');
+    }
+    // also update shop preview aura
+    const shopFox=document.querySelector('#shop-hat-preview')?.parentElement?.querySelector('.fox-img') || document.querySelector('.shop-preview .fox-img');
+    if(shopFox){ shopFox.style.transform='scale('+st.scale+')'; }
+    return st;
+  }
+
+  /* ---------------- Seasonal Worlds / Skins ---------------- */
+  function getSeasonalTheme(){
+    const d=new Date();
+    const m=d.getMonth(), day=d.getDate();
+    // Eid al-Fitr ~ Mar 20 and Eid al-Adha ~ May 27 in 2026 — widen window
+    const isEid = (m===2 && day>=18 && day<=24) || (m===4 && day>=25 && day<=30) || (m===1 && day>=10 && day<=22);
+    const isHalloween = (m===9);
+    const isWinter = (m===11);
+    const isDesert = (m===5 || m===6 || m===7);
+    if(isEid) return {id:'eid', name:'Eid Mubarak', emoji:'🌙', cls:'theme-eid'};
+    if(isHalloween) return {id:'halloween', name:'Spooky', emoji:'🎃', cls:'theme-halloween'};
+    if(isWinter) return {id:'winter', name:'Winter', emoji:'❄️', cls:'theme-winter'};
+    if(isDesert) return {id:'desert', name:'Desert', emoji:'🏜️', cls:'theme-desert'};
+    return {id:'default', name:'Sunny', emoji:'☀️', cls:''};
+  }
+  function applySeasonalTheme(){
+    const t=getSeasonalTheme();
+    document.body.classList.remove('theme-eid','theme-halloween','theme-desert','theme-winter');
+    if(t.cls) document.body.classList.add(t.cls);
+    // badge on home
+    let sb=$id('season-badge');
+    if(!sb){
+      const top=document.querySelector('.home-stage');
+      if(top){
+        sb=document.createElement('div');
+        sb.id='season-badge';
+        sb.className='season-badge';
+        top.appendChild(sb);
+      }
+    }
+    if(sb){
+      if(t.id==='default'){ sb.style.display='none'; }
+      else { sb.style.display='inline-flex'; sb.textContent=t.emoji+' '+t.name+' Theme'; }
+    }
+    // update world-labels tint if map visible
+    try{ renderDecor(); }catch(_){}
+    return t;
+  }
+
+  /* ---------------- Custom Avatar ---------------- */
+  const AVATAR_COLORS = ['#f6a53c','#8d6e63','#ffcc80','#a0826d','#ffd1dc','#a7e8d0','#7fb2ff','#c7b6ff','#ff6b6b','#3a2d5e'];
+  function applyAvatar(){
+    S.avatar = S.avatar || { body:'#f6a53c', cheek:'#ff9f9f' };
+    const body=S.avatar.body||'#f6a53c';
+    const cheek=S.avatar.cheek||'#ff9f9f';
+    // derive darker for ears outline
+    function shade(hex, amt){
+      try{
+        const n=parseInt(hex.slice(1),16);
+        const r=Math.max(0, Math.min(255, (n>>16)+amt));
+        const g=Math.max(0, Math.min(255, ((n>>8)&255)+amt));
+        const b=Math.max(0, Math.min(255, (n&255)+amt));
+        return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');
+      }catch(_){ return hex; }
+    }
+    const dark=shade(body, -38);
+    const light=shade(body, 38);
+    const sym=document.getElementById('fox');
+    if(sym){
+      const paths=sym.querySelectorAll('path, circle, ellipse');
+      // structure: [0] ear outer dark, [1] ear main body, [2] ear inner light, [3] ear inner light, [4] head circle body, [5] snout white, ...
+      if(paths[0]) paths[0].setAttribute('fill', dark);
+      if(paths[1]) paths[1].setAttribute('fill', body);
+      if(paths[4]) paths[4].setAttribute('fill', body);
+      // cheeks
+      const cheeks=sym.querySelectorAll('circle[opacity]');
+      cheeks.forEach(c=> c.setAttribute('fill', cheek));
+      // whisker strokes
+      const whiskers=sym.querySelectorAll('path[stroke]');
+      whiskers.forEach(w=> w.setAttribute('stroke', dark));
+    }
+  }
+  function setAvatarColor(hex, cheek){
+    S.avatar = S.avatar || {};
+    S.avatar.body=hex;
+    if(cheek) S.avatar.cheek=cheek;
+    save();
+    applyAvatar();
+    try{ renderShop(); }catch(_){}
+    try{ updateShopFox(); }catch(_){}
+    FX.click&&FX.click();
   }
 
   /* ---------------- streak & coins ---------------- */
@@ -339,9 +483,17 @@ window.Game = (function(){
     const allStars = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].every(k => S.stars[k] >= 3);
     if (allStars && S.badges.indexOf('stars') === -1){ S.badges.push('stars'); newBadges.push('stars'); }
 
+    const _evoBefore = getPetStage(Object.values(Object.assign({}, S.stars, {[n]:prevStars})).reduce((a,b)=>a+b,0));
     save();
     renderStarsMini(n);
     updateHomeStats();
+    try{
+      const _evoAfter = applyPetEvolution();
+      if(_evoAfter.name !== _evoBefore.name){
+        // evolution milestone — extra celebration
+        setTimeout(()=>{ burst(window.innerWidth/2, window.innerHeight*0.4, ['#ffd35c','#ff6b9d','#8f7cf0']); FX.correct && FX.correct(); showMascot(_evoAfter.emoji+' Evolved to '+_evoAfter.name+'! \uD83C\uDF89', {hold:3000, speak:false}); }, 650);
+      }
+    }catch(_){}
     showWin(n, stars, newBadges, prevStars !== stars, res);
   }
 
@@ -574,8 +726,14 @@ window.Game = (function(){
     const cont = $id('shop-content');
     if (!cont) return;
     S.shopOwned = S.shopOwned || [];
+    S.avatar = S.avatar || { body:'#f6a53c', cheek:'#ff9f9f' };
     let html = '<div class="shop-coins"><span style="font-weight:900; font-size:18px;">🪙 '+(S.coins||0)+' Coins</span><span style="font-size:12px; font-weight:800; color:var(--ink-2);">'+tt('shopHint')+'</span></div>';
     html += '<div class="shop-preview"><div class="mascot-home small" style="margin-bottom:0"><svg class="fox-img"><use href="#fox"/></svg><div class="shop-hat" id="shop-hat-preview" style="position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:32px;">'+(S.shopEquipped ? (SHOP_ITEMS.find(s=>s.id===S.shopEquipped)?.icon||'') : '')+'</div></div><div style="font-size:13px; font-weight:800; color:var(--ink-2);">'+(S.shopEquipped ? SHOP_ITEMS.find(s=>s.id===S.shopEquipped)?.name : 'No hat')+'</div></div>';
+    // avatar builder
+    const curBody = S.avatar.body || '#f6a53c';
+    html += '<div class="avatar-builder"><div style="font-weight:900; font-size:15px; text-align:center;">🎨 Custom Zippy</div>';
+    html += '<div style="display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;"><div class="fox-preview"><svg class="fox-img" style="width:92px;height:92px;"><use href="#fox"/></svg></div><div style="flex:1; min-width:160px;"><div style="font-size:11px; font-weight:900; color:var(--ink-2); margin-bottom:6px;">BODY COLOR</div><div class="avatar-row" id="avatar-body-row"></div><div style="font-size:11px; font-weight:900; color:var(--ink-2); margin:8px 0 6px;">CHEEK</div><div class="avatar-row" id="avatar-cheek-row"></div></div></div>';
+    html += '<div style="text-align:center; font-size:11px; font-weight:800; color:var(--ink-2);">Current: '+curBody+' • Tap a color to dress Zippy instantly</div></div>';
     html += '<div class="shop-grid">';
     SHOP_ITEMS.forEach(item=>{
       const owned = (S.shopOwned||[]).includes(item.id);
@@ -594,6 +752,32 @@ window.Game = (function(){
     html += '</div>';
     cont.innerHTML = html;
     updateShopFox();
+    // populate avatar color pickers
+    try{
+      const bodyRow=$id('avatar-body-row'), cheekRow=$id('avatar-cheek-row');
+      const CHEEKS=['#ff9f9f','#ffb3d1','#ff8fa7','#ff6b9d','#ffc1c1','#f8b5ff'];
+      if(bodyRow && bodyRow.children.length===0){
+        AVATAR_COLORS.forEach(col=>{
+          const b=document.createElement('button');
+          b.className='avatar-swatch'+(S.avatar.body===col?' active':'');
+          b.style.background=col;
+          b.title=col;
+          b.onclick=()=>{ setAvatarColor(col); document.querySelectorAll('#avatar-body-row .avatar-swatch').forEach(x=>x.classList.toggle('active', x.style.background===col || x.style.backgroundColor===col)); };
+          bodyRow.appendChild(b);
+        });
+      }
+      if(cheekRow && cheekRow.children.length===0){
+        CHEEKS.forEach(col=>{
+          const b=document.createElement('button');
+          b.className='avatar-swatch'+(S.avatar.cheek===col?' active':'');
+          b.style.background=col;
+          b.title=col;
+          b.onclick=()=>{ setAvatarColor(S.avatar.body, col); document.querySelectorAll('#avatar-cheek-row .avatar-swatch').forEach(x=>x.classList.toggle('active', x.style.background===col)); };
+          cheekRow.appendChild(b);
+        });
+      }
+      applyAvatar();
+    }catch(_){}
   }
   function updateShopFox(){
     const hat = document.getElementById('shop-hat-preview');
@@ -603,6 +787,7 @@ window.Game = (function(){
     const txt = equipped ? equipped.icon : '';
     if (hat) hat.textContent = txt;
     if (homeHat) homeHat.textContent = txt;
+    try{ applyAvatar(); }catch(_){}
   }
   function buyShop(id){
     const item = SHOP_ITEMS.find(s=>s.id===id);
@@ -971,7 +1156,15 @@ window.Game = (function(){
   /* ---------------- decor ---------------- */
   function renderDecor(){
     const el = $id('bg-decor');
-    const colors = ['#fff','#ffd35c','#ff9eb0','#a7e8d0','#c7b6ff'];
+    if(!el) return;
+    el.innerHTML='';
+    const theme = (typeof getSeasonalTheme==='function' ? getSeasonalTheme().id : 'default');
+    let colors;
+    if(theme==='eid') colors=['#fff','#ffd35c','#0ea57a','#a7e8d0','#fff6cc'];
+    else if(theme==='halloween') colors=['#fff','#ff7a2e','#4a1a6b','#ffd35c','#2b0a3d'];
+    else if(theme==='desert') colors=['#fff','#ffcc7a','#ff9a5c','#ffd35c','#ff6b35'];
+    else if(theme==='winter') colors=['#fff','#c8e8ff','#eaf6ff','#ffd35c','#a7e8d0'];
+    else colors=['#fff','#ffd35c','#ff9eb0','#a7e8d0','#c7b6ff'];
     for (let i=0;i<14;i++){
       const s = document.createElement('span');
       const sz = 14 + Math.random()*34;
@@ -1020,6 +1213,7 @@ window.Game = (function(){
     }
     // update fox hat
     updateShopFox();
+    try{ applyPetEvolution(); }catch(_){}
   }
 
   /* ---------------- boot ---------------- */
@@ -1104,6 +1298,16 @@ window.Game = (function(){
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('touchstart', unlock);
 
+    try{ applyAvatar(); }catch(_){}
+    try{ applySeasonalTheme(); }catch(_){}
+    // hook pet reactions via FX
+    try{
+      const _origCorrect = FX.correct;
+      const _origWrong = FX.wrong;
+      FX.correct = function(){ try{ _origCorrect.apply(FX, arguments);}catch(_){} try{ petReact('correct'); }catch(_){} try{ applyPetEvolution(); }catch(_){} };
+      FX.wrong = function(){ try{ _origWrong.apply(FX, arguments);}catch(_){} try{ petReact('wrong'); }catch(_){} };
+    }catch(_){}
+    try{ applyPetEvolution(); }catch(_){}
     try{ initSecretTriggers(); }catch(_){}
     showScreen('home');
   }
